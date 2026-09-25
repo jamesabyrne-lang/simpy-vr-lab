@@ -22,10 +22,9 @@ jobs:
           python -m pip install 'treat-sim==3.0.0' 'simpy==4.1.1' pytest selenium
       - name: Run bridge validation
         run: PYTHONPATH=. pytest -q tests/test_bridge.py
-      - name: Check browser JavaScript
+      - name: Assemble and check browser JavaScript
         run: |
-          cat src/app-01.jsfrag src/app-02.jsfrag src/app-03.jsfrag src/app-04.jsfrag src/app-05.jsfrag > /tmp/stars-app.js
-          node --check /tmp/stars-app.js
+          cat src/app-01.jsfrag src/app-02.jsfrag src/app-03.jsfrag src/app-04.jsfrag src/app-05.jsfrag > app.js
           node --check app.js
       - name: Browser runtime smoke test
         run: python tests/browser_smoke.py
