@@ -2,10 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#06111d" />
-  <meta name="description" content="STARS treatment-centre SimPy model visualised in Three.js and WebXR." />
-  <title>STARS VR Treatment Centre</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#08121c" />
+  <title>STARS Treatment Centre VR</title>
   <link rel="stylesheet" href="./styles.css" />
   <script src="https://cdn.jsdelivr.net/pyodide/v0.29.5/full/pyodide.js"></script>
   <script type="importmap">
@@ -18,122 +17,57 @@
   </script>
 </head>
 <body>
-  <main id="appShell">
-    <section id="viewport" aria-label="STARS treatment-centre 3D simulation">
-      <canvas id="sceneCanvas"></canvas>
-
-      <header class="topbar glass">
-        <div class="brand-block">
-          <div class="eyebrow">STARS · SIMPY · WEBXR</div>
-          <h1>Treatment Centre VR Lab</h1>
-          <p id="statusText">Loading the Python simulation runtime…</p>
-        </div>
-        <div class="top-actions">
-          <button class="view-btn" data-view="overview" type="button">Overview</button>
-          <button class="view-btn" data-view="triage" type="button">Triage</button>
-          <button class="view-btn" data-view="trauma" type="button">Trauma</button>
-          <button class="view-btn" data-view="nontrauma" type="button">Non-trauma</button>
-          <div id="vrSlot" aria-label="VR entry"></div>
-        </div>
-      </header>
-
-      <aside id="controlPanel" class="control-panel glass" aria-label="STARS model controls">
-        <div class="panel-title-row">
-          <div>
-            <div class="eyebrow">SCENARIO</div>
-            <h2>Experiment controls</h2>
-          </div>
-          <span id="engineBadge" class="badge">Python loading</span>
-        </div>
-
-        <div class="control-section">
-          <div class="section-label">Demand & pathways</div>
-          <label class="range-field">
-            <span>Demand multiplier <strong id="demandReadout">1.00×</strong></span>
-            <input id="demandMultiplier" type="range" min="0.50" max="2.00" step="0.05" value="1" />
-          </label>
-          <label class="range-field">
-            <span>Trauma probability <strong id="traumaProbReadout">12%</strong></span>
-            <input id="probTrauma" type="range" min="0" max="0.40" step="0.01" value="0.12" />
-          </label>
-          <label class="range-field">
-            <span>Non-trauma treatment <strong id="treatProbReadout">60%</strong></span>
-            <input id="nonTraumaTreatP" type="range" min="0" max="1" step="0.05" value="0.60" />
-          </label>
-        </div>
-
-        <div class="control-section">
-          <div class="section-label">Resource capacity</div>
-          <div class="capacity-grid">
-            <label><span>Triage</span><select id="nTriage"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
-            <label><span>Registration</span><select id="nReg"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
-            <label><span>Exam rooms</span><select id="nExam"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></label>
-            <label><span>Trauma bays</span><select id="nTrauma"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
-            <label><span>Non-trauma cubicles</span><select id="nCubicles1"><option selected>1</option><option>2</option><option>3</option><option>4</option></select></label>
-            <label><span>Trauma cubicles</span><select id="nCubicles2"><option selected>1</option><option>2</option><option>3</option><option>4</option></select></label>
-          </div>
-        </div>
-
-        <details class="advanced-controls">
-          <summary>Service-time assumptions</summary>
-          <div class="advanced-grid">
-            <label><span>Triage mean</span><input id="triageMean" type="number" min="0.2" max="20" step="0.1" value="3" /><em>min</em></label>
-            <label><span>Registration mean</span><input id="regMean" type="number" min="0.2" max="30" step="0.1" value="5" /><em>min</em></label>
-            <label><span>Examination mean</span><input id="examMean" type="number" min="0.5" max="90" step="0.5" value="16" /><em>min</em></label>
-            <label><span>Trauma stabilisation</span><input id="traumaMean" type="number" min="1" max="240" step="1" value="90" /><em>min</em></label>
-            <label><span>Non-trauma treatment</span><input id="ntTreatMean" type="number" min="1" max="120" step="0.5" value="13.3" /><em>min</em></label>
-            <label><span>Trauma treatment</span><input id="traumaTreatMean" type="number" min="1" max="180" step="1" value="30" /><em>min</em></label>
-          </div>
-        </details>
-
-        <div class="run-row">
-          <label class="seed-field"><span>Seed</span><input id="seed" type="number" min="0" max="2147483647" value="17" /></label>
-          <button id="baselineButton" class="secondary-btn" type="button">Reset baseline</button>
-        </div>
-        <button id="runButton" class="primary-btn" type="button" disabled>Run STARS simulation</button>
-
-        <div class="playback-row">
-          <button id="playPause" class="icon-btn" type="button" aria-label="Pause animation">Ⅱ</button>
-          <button id="restartButton" class="icon-btn" type="button" aria-label="Restart animation">↺</button>
-          <label class="speed-field"><span>Playback</span><select id="speed"><option value="15">15×</option><option value="30">30×</option><option value="60" selected>60×</option><option value="120">120×</option><option value="240">240×</option><option value="480">480×</option></select></label>
-        </div>
-        <label class="timeline-field"><span>Timeline <strong id="timelineReadout">06:00</strong></span><input id="timeline" type="range" min="0" max="1140" step="1" value="0" /></label>
-      </aside>
-
-      <section class="kpi-strip glass" aria-label="Live simulation state">
-        <article><span>Clock</span><strong id="kpiClock">06:00</strong></article>
-        <article><span>In system</span><strong id="kpiInSystem">0</strong></article>
-        <article><span>Waiting</span><strong id="kpiWaiting">0</strong></article>
-        <article><span>In service</span><strong id="kpiService">0</strong></article>
-        <article><span>Completed</span><strong id="kpiCompleted">0</strong></article>
-      </section>
-
-      <aside id="inspector" class="inspector glass" aria-live="polite">
-        <div class="inspector-empty">
-          <div class="eyebrow">EDUCATIONAL MODE</div>
-          <h3>Select a patient or resource</h3>
-          <p>Click an entity to inspect its SimPy-derived timeline, queueing and resource state.</p>
-        </div>
-      </aside>
-
-      <aside class="resource-board glass" aria-label="Resource state">
-        <div class="board-header"><span>RESOURCE STATE</span><button id="eventToggle" type="button">Event log</button></div>
-        <div id="resourceCards" class="resource-cards"></div>
-      </aside>
-
-      <aside id="eventPanel" class="event-panel glass" hidden>
-        <div class="board-header"><span>LATEST SIMPY EVENTS</span><button id="eventClose" type="button">Close</button></div>
-        <ol id="eventLog"></ol>
-      </aside>
-
-      <div class="legend glass" aria-label="Pathway legend">
-        <span><i class="dot trauma-dot"></i>Trauma</span>
-        <span><i class="dot nontrauma-dot"></i>Non-trauma</span>
-        <span><i class="status-dot busy-dot"></i>Occupied resource</span>
+<main id="app">
+  <section id="viewport" aria-label="STARS treatment-centre 3D simulation">
+    <canvas id="sceneCanvas"></canvas>
+    <header class="topbar glass">
+      <div class="brand"><div class="eyebrow">STARS · SIMPY · WEBXR</div><h1>Treatment Centre VR</h1><p id="statusText">Loading Python runtime…</p></div>
+      <div class="view-actions">
+        <button type="button" data-view="overview">Overview</button><button type="button" data-view="arrivals">Arrivals</button>
+        <button type="button" data-view="nontrauma">Non-trauma</button><button type="button" data-view="trauma">Trauma</button><div id="vrSlot"></div>
       </div>
+    </header>
+    <aside class="control-panel glass" aria-label="Scenario controls">
+      <div class="panel-title"><div><div class="eyebrow">EXPERIMENT</div><h2>STARS scenario</h2></div><span id="engineBadge" class="badge">Python loading</span></div>
+      <div class="baseline-note">Baseline values reproduce the current STARS treatment-centre model.</div>
+      <details open><summary>Demand & pathway</summary>
+        <label><span>Demand multiplier <b id="arrivalScaleOut">1.00×</b></span><input id="arrivalScale" type="range" min="0.40" max="1.80" step="0.05" value="1" /></label>
+        <label><span>Trauma probability <b id="traumaProbOut">12%</b></span><input id="traumaProb" type="range" min="0" max="0.40" step="0.01" value="0.12" /></label>
+        <label><span>Non-trauma treatment <b id="ntTreatProbOut">60%</b></span><input id="ntTreatProb" type="range" min="0" max="1" step="0.05" value="0.60" /></label>
+      </details>
+      <details open><summary>Capacity</summary><div class="field-grid">
+        <label class="compact"><span>Triage</span><select id="nTriage"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+        <label class="compact"><span>Registration</span><select id="nReg"><option>1</option><option>2</option><option>3</option></select></label>
+        <label class="compact"><span>Examination</span><select id="nExam"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
+        <label class="compact"><span>Trauma bays</span><select id="nTrauma"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
+        <label class="compact"><span>Non-trauma cubicles</span><select id="nNTCub"><option selected>1</option><option>2</option><option>3</option><option>4</option></select></label>
+        <label class="compact"><span>Trauma cubicles</span><select id="nTCub"><option selected>1</option><option>2</option><option>3</option></select></label>
+      </div></details>
+      <details><summary>Service times</summary>
+        <label><span>Examination mean <b id="examMeanOut">16 min</b></span><input id="examMean" type="range" min="5" max="35" step="1" value="16" /></label>
+        <label><span>Trauma treatment mean <b id="traumaTreatMeanOut">30 min</b></span><input id="traumaTreatMean" type="range" min="10" max="75" step="1" value="30" /></label>
+        <label><span>Non-trauma treatment mean <b id="ntTreatMeanOut">13.3 min</b></span><input id="ntTreatMean" type="range" min="5" max="40" step="0.5" value="13.3" /></label>
+      </details>
+      <div class="field-grid two">
+        <label class="compact"><span>Random seed</span><input id="seed" type="number" min="0" max="999999" value="17" /></label>
+        <label class="compact"><span>Run length</span><select id="runLength"><option value="600">10 h</option><option value="1080">18 h</option><option value="1140" selected>19 h</option></select></label>
+      </div>
+      <div class="button-row"><button id="resetBaseline" type="button" class="secondary">Reset baseline</button><button id="runButton" type="button" class="primary" disabled>Run SimPy</button></div>
+    </aside>
+    <section class="kpi-strip glass" aria-label="Live model state">
+      <article><span>Simulation time</span><strong id="kpiClock">06:00</strong></article><article><span>In system</span><strong id="kpiSystem">0</strong></article>
+      <article><span>Waiting</span><strong id="kpiWaiting">0</strong></article><article><span>In service</span><strong id="kpiService">0</strong></article><article><span>Completed</span><strong id="kpiCompleted">0</strong></article>
     </section>
-  </main>
-  <noscript>This application requires JavaScript.</noscript>
-  <script type="module" src="./app.js"></script>
+    <section class="playback glass" aria-label="Playback controls">
+      <button id="playPause" type="button" aria-label="Pause">Ⅱ</button><button id="restart" type="button" aria-label="Restart">↺</button>
+      <label><span>Speed</span><select id="speed"><option value="1">1×</option><option value="4">4×</option><option value="12" selected>12×</option><option value="30">30×</option><option value="60">60×</option></select></label>
+      <input id="timeline" aria-label="Simulation timeline" type="range" min="0" max="1140" step="0.1" value="0" />
+    </section>
+    <aside id="inspector" class="inspector glass" aria-live="polite"><div class="eyebrow">INSPECT</div><h2 id="inspectTitle">Select a patient or resource</h2><div id="inspectBody" class="inspect-body">Click an entity in the 3D scene to inspect its simulated history and current state.</div></aside>
+    <aside class="event-panel glass"><div class="event-head"><div><div class="eyebrow">EVENT TRACE</div><h2>Recent SimPy events</h2></div><button id="toggleEvents" type="button">Hide</button></div><div id="eventLog" class="event-log"></div></aside>
+    <div class="legend glass"><span><i class="dot trauma"></i>Trauma</span><span><i class="dot nontrauma"></i>Non-trauma</span><span><i class="dot idle"></i>Idle resource</span><span><i class="dot busy"></i>Occupied</span></div>
+  </section>
+</main>
+<script type="module" src="./app.js"></script>
 </body>
 </html>
