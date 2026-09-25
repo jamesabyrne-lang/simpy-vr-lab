@@ -1,0 +1,132 @@
+:root {
+  color-scheme: dark;
+  --bg: #050b14;
+  --panel: rgba(8, 18, 32, 0.78);
+  --panel-strong: rgba(8, 18, 32, 0.93);
+  --line: rgba(181, 214, 255, 0.16);
+  --text: #edf5ff;
+  --muted: #9bb0c7;
+  --cyan: #55d8ff;
+  --mint: #67f0c5;
+  --amber: #ffca72;
+  --danger: #ff7f91;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--text); }
+button, input, select { font: inherit; }
+button, select, input { color: inherit; }
+
+#appShell, #viewport { width: 100%; height: 100%; }
+#viewport { position: relative; overflow: hidden; background: radial-gradient(circle at 50% 30%, #12243a, #050b14 60%); }
+#sceneCanvas { display: block; width: 100%; height: 100%; }
+
+.glass {
+  background: linear-gradient(135deg, rgba(14, 27, 45, 0.88), rgba(6, 14, 26, 0.72));
+  border: 1px solid var(--line);
+  box-shadow: 0 18px 70px rgba(0,0,0,.28);
+  backdrop-filter: blur(18px) saturate(125%);
+  -webkit-backdrop-filter: blur(18px) saturate(125%);
+}
+
+.topbar {
+  position: absolute;
+  z-index: 10;
+  top: 18px;
+  left: 18px;
+  right: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 16px 14px 18px;
+  border-radius: 18px;
+  pointer-events: auto;
+}
+
+.eyebrow { font-size: 10px; letter-spacing: .18em; font-weight: 800; color: var(--cyan); }
+h1 { margin: 3px 0 2px; font-size: clamp(18px, 2vw, 28px); line-height: 1.05; letter-spacing: -.03em; }
+h2 { margin: 2px 0 0; font-size: 18px; letter-spacing: -.02em; }
+#statusText { margin: 0; font-size: 12px; color: var(--muted); }
+
+.topbar-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+button, select, input[type="number"] { border: 1px solid var(--line); }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .48; }
+.ghost-btn, .icon-btn {
+  background: rgba(255,255,255,.05);
+  border-radius: 11px;
+  min-height: 38px;
+  padding: 0 13px;
+}
+.ghost-btn:hover, .icon-btn:hover { background: rgba(255,255,255,.10); border-color: rgba(181,214,255,.28); }
+
+.control-panel {
+  position: absolute;
+  z-index: 9;
+  top: 112px;
+  left: 18px;
+  width: min(320px, calc(100vw - 36px));
+  padding: 18px;
+  border-radius: 20px;
+}
+.panel-heading { display: flex; justify-content: space-between; gap: 12px; align-items: start; margin-bottom: 18px; }
+.badge { font-size: 10px; font-weight: 800; letter-spacing: .06em; padding: 7px 8px; border-radius: 999px; background: rgba(85,216,255,.12); color: var(--cyan); border: 1px solid rgba(85,216,255,.22); white-space: nowrap; }
+.badge.ready { background: rgba(103,240,197,.11); color: var(--mint); border-color: rgba(103,240,197,.24); }
+
+.control-panel > label { display: block; margin: 14px 0; }
+.control-panel label > span { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; color: var(--muted); font-size: 12px; }
+.control-panel label strong { color: var(--text); font-weight: 700; }
+input[type="range"] { width: 100%; accent-color: var(--cyan); }
+
+.split-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.compact-field span { display: block !important; margin-bottom: 7px !important; }
+select, input[type="number"] { width: 100%; background: rgba(255,255,255,.055); border-radius: 10px; padding: 9px 10px; outline: none; }
+select:focus, input:focus, button:focus-visible { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(85,216,255,.14); outline: none; }
+
+.primary-btn { width: 100%; min-height: 44px; margin-top: 2px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #36bfe9, #38ddb1); color: #03111a; font-weight: 850; box-shadow: 0 10px 30px rgba(47,206,205,.18); }
+.primary-btn:hover:not(:disabled) { filter: brightness(1.07); }
+.playback-row { display: grid; grid-template-columns: 44px 44px 1fr; gap: 8px; margin-top: 10px; align-items: end; }
+.icon-btn { width: 44px; padding: 0; font-weight: 800; }
+.speed-control span { display: block; margin: 0 0 7px 1px; font-size: 11px; color: var(--muted); }
+.speed-control select { height: 38px; padding-top: 6px; padding-bottom: 6px; }
+
+.kpi-strip {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(92px, 1fr));
+  gap: 1px;
+  width: min(760px, calc(100vw - 36px));
+  border-radius: 18px;
+  overflow: hidden;
+}
+.kpi-strip article { padding: 12px 14px; background: rgba(255,255,255,.025); min-width: 0; }
+.kpi-strip span { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .09em; }
+.kpi-strip strong { display: block; margin-top: 3px; font-size: 19px; letter-spacing: -.03em; overflow: hidden; text-overflow: ellipsis; }
+
+.hint { position: absolute; right: 18px; bottom: 92px; z-index: 7; padding: 9px 12px; border-radius: 12px; color: var(--muted); font-size: 11px; }
+
+#vrSlot { min-width: 92px; min-height: 38px; display: flex; align-items: center; }
+#vrSlot button { position: static !important; width: auto !important; min-width: 92px !important; height: 38px !important; padding: 0 13px !important; border-radius: 11px !important; border: 1px solid rgba(103,240,197,.28) !important; background: rgba(103,240,197,.11) !important; color: var(--mint) !important; opacity: 1 !important; font-size: 12px !important; font-weight: 800 !important; line-height: 38px !important; }
+
+@media (max-width: 760px) {
+  .topbar { align-items: flex-start; }
+  .topbar-actions .ghost-btn { display: none; }
+  .control-panel { top: 105px; width: 270px; padding: 14px; }
+  .control-panel > label { margin: 10px 0; }
+  .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+  .kpi-strip article:nth-child(4), .kpi-strip article:nth-child(5) { display: none; }
+  .hint { display: none; }
+}
+
+@media (max-width: 520px) {
+  .topbar { left: 10px; right: 10px; top: 10px; padding: 12px; }
+  #statusText { display: none; }
+  .control-panel { left: 10px; top: 91px; width: 240px; }
+  .control-panel label > span { font-size: 11px; }
+  .kpi-strip { left: 10px; right: 10px; bottom: 10px; transform: none; width: auto; }
+}
