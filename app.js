@@ -8,7 +8,7 @@ const UI = {
   nTriage: $('nTriage'), nReg: $('nReg'), nExam: $('nExam'), nTrauma: $('nTrauma'),
   nCubicles1: $('nCubicles1'), nCubicles2: $('nCubicles2'),
   triageMean: $('triageMean'), regMean: $('regMean'), examMean: $('examMean'), traumaMean: $('traumaMean'),
-  ntTreatMean: $('ntTreatMean'), traumaTreatMean: $('traumaTreatMean'), seed: $('seed'),
+  ntTreatMean: $('ntTreatMean'), traumaTreatMean: $('traumaTreatMean'), seed: $('seed'), duration: $('duration'),
   run: $('runButton'), baseline: $('baselineButton'), playPause: $('playPause'), restart: $('restartButton'),
   speed: $('speed'), timeline: $('timeline'), timelineReadout: $('timelineReadout'), status: $('statusText'), badge: $('engineBadge'),
   clock: $('kpiClock'), inSystem: $('kpiInSystem'), waiting: $('kpiWaiting'), inService: $('kpiService'), completed: $('kpiCompleted'),
@@ -20,7 +20,7 @@ const BASELINE = {
   n_triage: 1, n_reg: 1, n_exam: 3, n_trauma: 2, n_cubicles_1: 1, n_cubicles_2: 1,
   triage_mean: 3, reg_mean: 5, exam_mean: 16, trauma_mean: 90,
   trauma_treat_mean: 30, non_trauma_treat_mean: 13.3,
-  non_trauma_treat_p: 0.60, prob_trauma: 0.12, demand_multiplier: 1, duration: 1140, seed: 17
+  non_trauma_treat_p: 0.60, prob_trauma: 0.12, demand_multiplier: 1, duration: 360, seed: 17
 };
 const RESOURCE_LABELS = {
   triage: 'Triage', registration: 'Registration', examination: 'Examination', trauma: 'Trauma stabilisation',
@@ -295,7 +295,7 @@ function updateUi(){UI.clock.textContent=formatClock(simTime);UI.timeline.value=
 function patientStatus(p,t){const q=makeQueueMaps(t),s=patientState(p,t,q);if(!s)return'Not arrived';if(s.kind==='queue')return`Waiting: ${RESOURCE_LABELS[s.stage]}`;if(s.kind==='service')return`In service: ${RESOURCE_LABELS[s.stage]} ${s.resource||''}`;if(s.kind==='departed'||s.kind==='leaving')return'Discharged';return'In system';}
 function renderPatientInspector(p){const pathClass=p.pathway==='trauma'?'trauma':'non-trauma';const lines=p.stages.map(s=>`<li><b>${RESOURCE_LABELS[s.stage]}</b><br>${formatClock(s.queue_enter)} queue${s.service_start!=null?` → ${formatClock(s.service_start)} start`:''}${s.service_end!=null?` → ${formatClock(s.service_end)} end`:''}${s.wait!=null?` · wait ${s.wait.toFixed(1)}m`:''}</li>`).join('');UI.inspector.innerHTML=`<div class="eyebrow">PATIENT TRACE <span class="path-tag ${pathClass}">${p.pathway.replace('_',' ')}</span></div><h3>Patient ${String(p.id).padStart(3,'0')}</h3><p>${patientStatus(p,simTime)}</p><div class="inspector-grid"><div><span>Arrived</span><strong>${formatClock(p.arrival)}</strong></div><div><span>Departed</span><strong>${p.departure==null?'—':formatClock(p.departure)}</strong></div><div><span>Total wait</span><strong>${p.total_wait.toFixed(1)} min</strong></div><div><span>Time in system</span><strong>${p.total_time==null?'—':p.total_time.toFixed(1)+' min'}</strong></div></div><ol class="timeline-list">${lines}</ol>`;}
 function renderResourceInspector(stage,index){const s=liveResourceState(stage,simTime),current=[],queue=[];for(const p of modelData?.patients||[]){const st=p.stages.find(x=>x.stage===stage);if(!st)continue;if(st.service_start!=null&&st.service_start<=simTime&&(st.service_end==null||st.service_end>simTime)&&st.resource_id===index)current.push(p);if(st.queue_enter<=simTime&&(st.service_start==null||st.service_start>simTime))queue.push(p);}UI.inspector.innerHTML=`<div class="eyebrow">RESOURCE TRACE</div><h3>${RESOURCE_LABELS[stage]} ${index}</h3><p>${current.length?'Occupied by patient '+String(current[0].id).padStart(3,'0'):'Idle'} · queue for resource type: ${queue.length}</p><div class="inspector-grid"><div><span>Capacity</span><strong>${s.cap}</strong></div><div><span>Busy now</span><strong>${s.busy}</strong></div><div><span>Cumulative util.</span><strong>${Math.round(s.util*100)}%</strong></div><div><span>Queue</span><strong>${queue.length}</strong></div></div>`;}
-function renderSummaryInspector(){if(!modelData)return;const m=modelData.extra_metrics,up=modelData.metrics;UI.inspector.innerHTML=`<div class="eyebrow">RUN SUMMARY</div><h3>STARS scenario complete</h3><p>Published treat-sim ${modelData.upstream.version} · seed ${modelData.config.seed}</p><div class="inspector-grid"><div><span>Arrivals</span><strong>${up['00_arrivals']}</strong></div><div><span>Completed</span><strong>${m.completed}</strong></div><div><span>Mean total wait</span><strong>${m.mean_total_wait==null?'—':m.mean_total_wait.toFixed(1)+'m'}</strong></div><div><span>P95 total wait</span><strong>${m.p95_total_wait==null?'—':m.p95_total_wait.toFixed(1)+'m'}</strong></div><div><span>Mean time in system</span><strong>${m.mean_time_in_system==null?'—':m.mean_time_in_system.toFixed(1)+'m'}</strong></div><div><span>Max queue</span><strong>${modelData.max_queue.overall}</strong></div></div>`;}
+function renderSummaryInspector(){if(!modelData)return;const m=modelData.extra_metrics,up=modelData.metrics;UI.inspector.innerHTML=`<div class="eyebrow">RUN SUMMARY</div><h3>Healthcare scenario complete</h3><p>STARS-inspired SimPy prototype · seed ${modelData.config.seed}</p><div class="inspector-grid"><div><span>Arrivals</span><strong>${up['00_arrivals']}</strong></div><div><span>Completed</span><strong>${m.completed}</strong></div><div><span>Mean total wait</span><strong>${m.mean_total_wait==null?'—':m.mean_total_wait.toFixed(1)+'m'}</strong></div><div><span>P95 total wait</span><strong>${m.p95_total_wait==null?'—':m.p95_total_wait.toFixed(1)+'m'}</strong></div><div><span>Mean time in system</span><strong>${m.mean_time_in_system==null?'—':m.mean_time_in_system.toFixed(1)+'m'}</strong></div><div><span>Max queue</span><strong>${modelData.max_queue.overall}</strong></div></div>`;}
 function renderInspector(item){if(item.kind==='patient')renderPatientInspector(item.patient);else if(item.kind==='resource')renderResourceInspector(item.stage,item.index);}
 
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
@@ -303,37 +303,25 @@ renderer.domElement.addEventListener('pointerdown',(ev)=>{if(renderer.xr.isPrese
 
 // ---------- In-world VR board ----------
 const boardCanvas=document.createElement('canvas');boardCanvas.width=1024;boardCanvas.height=480;const boardCtx=boardCanvas.getContext('2d');const boardTex=new THREE.CanvasTexture(boardCanvas);boardTex.colorSpace=THREE.SRGBColorSpace;const board=new THREE.Mesh(new THREE.PlaneGeometry(8.5,4),new THREE.MeshBasicMaterial({map:boardTex,transparent:true,side:THREE.DoubleSide}));board.position.set(1,4.2,-13.9);facility.add(board);
-function updateWorldBoard(){const c=currentCounts(simTime);boardCtx.clearRect(0,0,1024,480);boardCtx.fillStyle='rgba(5,15,26,.94)';boardCtx.fillRect(0,0,1024,480);boardCtx.strokeStyle='#56d7ff';boardCtx.lineWidth=7;boardCtx.strokeRect(14,14,996,452);boardCtx.fillStyle='#56d7ff';boardCtx.font='800 30px system-ui';boardCtx.fillText('STARS TREATMENT CENTRE · LIVE',48,72);boardCtx.fillStyle='#eef6fb';boardCtx.font='800 76px system-ui';boardCtx.fillText(formatClock(simTime),48,165);boardCtx.font='700 38px system-ui';boardCtx.fillText(`In system  ${c.inSystem}`,48,245);boardCtx.fillText(`Waiting    ${c.waiting}`,48,310);boardCtx.fillText(`In service ${c.inService}`,520,245);boardCtx.fillText(`Completed  ${c.completed}`,520,310);boardCtx.fillStyle='#9bb0c2';boardCtx.font='500 24px system-ui';boardCtx.fillText('Simulation state derives from the STARS SimPy event trace.',48,402);boardTex.needsUpdate=true;}
+function updateWorldBoard(){const c=currentCounts(simTime);boardCtx.clearRect(0,0,1024,480);boardCtx.fillStyle='rgba(5,15,26,.94)';boardCtx.fillRect(0,0,1024,480);boardCtx.strokeStyle='#56d7ff';boardCtx.lineWidth=7;boardCtx.strokeRect(14,14,996,452);boardCtx.fillStyle='#56d7ff';boardCtx.font='800 30px system-ui';boardCtx.fillText('HEALTHCARE DES · LIVE',48,72);boardCtx.fillStyle='#eef6fb';boardCtx.font='800 76px system-ui';boardCtx.fillText(formatClock(simTime),48,165);boardCtx.font='700 38px system-ui';boardCtx.fillText(`In system  ${c.inSystem}`,48,245);boardCtx.fillText(`Waiting    ${c.waiting}`,48,310);boardCtx.fillText(`In service ${c.inService}`,520,245);boardCtx.fillText(`Completed  ${c.completed}`,520,310);boardCtx.fillStyle='#9bb0c2';boardCtx.font='500 24px system-ui';boardCtx.fillText('Simulation state derives from the SimPy event trace.',48,402);boardTex.needsUpdate=true;}
 
 // ---------- Python / STARS ----------
-function readConfig(){return{demand_multiplier:Number(UI.demand.value),prob_trauma:Number(UI.probTrauma.value),non_trauma_treat_p:Number(UI.ntTreatP.value),n_triage:Number(UI.nTriage.value),n_reg:Number(UI.nReg.value),n_exam:Number(UI.nExam.value),n_trauma:Number(UI.nTrauma.value),n_cubicles_1:Number(UI.nCubicles1.value),n_cubicles_2:Number(UI.nCubicles2.value),triage_mean:Number(UI.triageMean.value),reg_mean:Number(UI.regMean.value),exam_mean:Number(UI.examMean.value),trauma_mean:Number(UI.traumaMean.value),non_trauma_treat_mean:Number(UI.ntTreatMean.value),trauma_treat_mean:Number(UI.traumaTreatMean.value),duration:BASELINE.duration,seed:Number(UI.seed.value)};}
-function setBaseline(){UI.demand.value=BASELINE.demand_multiplier;UI.probTrauma.value=BASELINE.prob_trauma;UI.ntTreatP.value=BASELINE.non_trauma_treat_p;UI.nTriage.value=BASELINE.n_triage;UI.nReg.value=BASELINE.n_reg;UI.nExam.value=BASELINE.n_exam;UI.nTrauma.value=BASELINE.n_trauma;UI.nCubicles1.value=BASELINE.n_cubicles_1;UI.nCubicles2.value=BASELINE.n_cubicles_2;UI.triageMean.value=BASELINE.triage_mean;UI.regMean.value=BASELINE.reg_mean;UI.examMean.value=BASELINE.exam_mean;UI.traumaMean.value=BASELINE.trauma_mean;UI.ntTreatMean.value=BASELINE.non_trauma_treat_mean;UI.traumaTreatMean.value=BASELINE.trauma_treat_mean;UI.seed.value=BASELINE.seed;updateReadouts();}
+function readConfig(){return{demand_multiplier:Number(UI.demand.value),prob_trauma:Number(UI.probTrauma.value),non_trauma_treat_p:Number(UI.ntTreatP.value),n_triage:Number(UI.nTriage.value),n_reg:Number(UI.nReg.value),n_exam:Number(UI.nExam.value),n_trauma:Number(UI.nTrauma.value),n_cubicles_1:Number(UI.nCubicles1.value),n_cubicles_2:Number(UI.nCubicles2.value),triage_mean:Number(UI.triageMean.value),reg_mean:Number(UI.regMean.value),exam_mean:Number(UI.examMean.value),trauma_mean:Number(UI.traumaMean.value),non_trauma_treat_mean:Number(UI.ntTreatMean.value),trauma_treat_mean:Number(UI.traumaTreatMean.value),duration:Number(UI.duration.value),seed:Number(UI.seed.value)};}
+function setBaseline(){UI.demand.value=BASELINE.demand_multiplier;UI.probTrauma.value=BASELINE.prob_trauma;UI.ntTreatP.value=BASELINE.non_trauma_treat_p;UI.nTriage.value=BASELINE.n_triage;UI.nReg.value=BASELINE.n_reg;UI.nExam.value=BASELINE.n_exam;UI.nTrauma.value=BASELINE.n_trauma;UI.nCubicles1.value=BASELINE.n_cubicles_1;UI.nCubicles2.value=BASELINE.n_cubicles_2;UI.triageMean.value=BASELINE.triage_mean;UI.regMean.value=BASELINE.reg_mean;UI.examMean.value=BASELINE.exam_mean;UI.traumaMean.value=BASELINE.trauma_mean;UI.ntTreatMean.value=BASELINE.non_trauma_treat_mean;UI.traumaTreatMean.value=BASELINE.trauma_treat_mean;UI.duration.value=BASELINE.duration;UI.seed.value=BASELINE.seed;updateReadouts();}
 function updateReadouts(){$('demandReadout').textContent=Number(UI.demand.value).toFixed(2)+'×';$('traumaProbReadout').textContent=Math.round(Number(UI.probTrauma.value)*100)+'%';$('treatProbReadout').textContent=Math.round(Number(UI.ntTreatP.value)*100)+'%';}
 async function initialisePython(){
   try{
-    UI.status.textContent='Loading CPython, NumPy, pandas and SciPy…';
+    UI.status.textContent='Loading Python and SimPy…';
     pyodide=await window.loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.29.5/full/'});
-    await pyodide.loadPackage(['micropip','numpy','pandas','scipy']);
-    UI.status.textContent='Installing STARS browser dependencies…';
-    const pySetup=`import micropip, importlib.util, pathlib
-await micropip.install('plotly>=6,<7')
-await micropip.install('simpy==4.1.1', deps=False)
-await micropip.install('sim-tools==1.3.0', deps=False)
-await micropip.install('treat-sim==3.0.0', deps=False)
-spec = importlib.util.find_spec('sim_tools')
-init_path = pathlib.Path(list(spec.submodule_search_locations)[0]) / '__init__.py'
-init_path.write_text("""Browser shim: avoid eager plotting-module imports.
-__version__ = "1.3.0"
-__all__ = ["distributions"]
-""")
-`;
-    await pyodide.runPythonAsync(pySetup);
-    const bridge=await fetch('./stars_bridge.py').then(r=>{if(!r.ok)throw new Error('Could not load stars_bridge.py');return r.text();});
-    await pyodide.runPythonAsync(bridge);
-    UI.badge.textContent='STARS ready';
+    await pyodide.loadPackage('micropip');
+    UI.status.textContent='Installing SimPy…';
+    await pyodide.runPythonAsync("import micropip\nawait micropip.install('simpy==4.1.1')");
+    const model=await fetch('./simulation.py').then(r=>{if(!r.ok)throw new Error('Could not load simulation.py');return r.text();});
+    await pyodide.runPythonAsync(model);
+    UI.badge.textContent='SimPy ready';
     UI.badge.classList.add('ready');
     UI.run.disabled=false;
-    UI.status.textContent='STARS treatment-centre model ready · published treat-sim 3.0.0';
+    UI.status.textContent='Healthcare treatment-centre model ready';
     await runSimulation();
   }catch(err){
     console.error(err);
@@ -341,7 +329,24 @@ __all__ = ["distributions"]
     UI.status.textContent='Model runtime failed: '+err.message;
   }
 }
-async function runSimulation(){if(!pyodide)return;const generation=++runGeneration;UI.run.disabled=true;UI.run.textContent='Running STARS model…';UI.status.textContent='Executing the SimPy treatment-centre model…';try{pyodide.globals.set('vr_config_json',JSON.stringify(readConfig()));const raw=await pyodide.runPythonAsync('run_stars_vr(vr_config_json)');if(generation!==runGeneration)return;modelData=JSON.parse(raw);UI.timeline.max=String(modelData.config.duration);rebuildResources(modelData.resource_capacities);rebuildPatients();selected=null;resetPlayback();const m=modelData.extra_metrics;UI.status.textContent=`${modelData.metrics['00_arrivals']} arrivals · ${m.completed} completed · max queue ${modelData.max_queue.overall} · seed ${modelData.config.seed}`;renderSummaryInspector();}catch(err){console.error(err);UI.status.textContent='Simulation failed: '+err.message;}finally{UI.run.disabled=false;UI.run.textContent='Run STARS simulation';}}
+async function runSimulation(){
+  if(!pyodide)return;
+  const generation=++runGeneration;
+  UI.run.disabled=true; UI.run.textContent='Running model…';
+  UI.status.textContent='Executing the SimPy treatment-centre model…';
+  try{
+    pyodide.globals.set('vr_config_json',JSON.stringify(readConfig()));
+    const raw=await pyodide.runPythonAsync('run_healthcare_vr(vr_config_json)');
+    if(generation!==runGeneration)return;
+    modelData=JSON.parse(raw);
+    UI.timeline.max=String(modelData.config.duration);
+    rebuildResources(modelData.resource_capacities); rebuildPatients(); selected=null; resetPlayback();
+    const m=modelData.extra_metrics;
+    UI.status.textContent=modelData.metrics['00_arrivals']+' arrivals · '+m.completed+' completed · max queue '+modelData.max_queue.overall+' · seed '+modelData.config.seed;
+    renderSummaryInspector();
+  }catch(err){console.error(err);UI.status.textContent='Simulation failed: '+err.message;}
+  finally{UI.run.disabled=false;UI.run.textContent='Run simulation';}
+}
 function resetPlayback(){simTime=0;playing=true;UI.playPause.textContent='Ⅱ';lastFrame=performance.now();for(const a of patientAgents){a.userData.initialised=false;a.visible=false;}updateVisuals(.016);updateUi();updateWorldBoard();}
 
 // ---------- Controls ----------
