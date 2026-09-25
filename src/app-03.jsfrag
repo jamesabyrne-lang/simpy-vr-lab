@@ -1,0 +1,70 @@
+  g.position.set(x,0,z);g.rotation.y=rot;facility.add(g);return g;
+}
+
+function buildFacility() {
+  meshBox(52,.35,29,materials.floor,0,-.2,0);
+  const grid=new THREE.GridHelper(52,52,0x294355,0x172838);grid.material.opacity=.35;grid.material.transparent=true;facility.add(grid);
+  // Outer walls and glass frontage.
+  meshBox(52,4.7,.25,materials.wall,0,2.35,-14.4);
+  meshBox(52,4.7,.25,materials.wall,0,2.35,14.4);
+  meshBox(.25,4.7,28.8,materials.wall,-26,2.35,0);
+  meshBox(.25,4.7,28.8,materials.wall,26,2.35,0);
+  meshBox(12,3.5,.08,materials.glass,-19,1.75,-.0);
+  // Main pathway flooring.
+  floorZone('triage',-14,0,8,6,0x17435a);
+  floorZone('registration',-5,7.4,8,6,0x174a47);
+  floorZone('examination',5.5,7.4,11,6,0x173c55);
+  floorZone('non_trauma_treatment',16,7.4,8,6,0x174a47);
+  floorZone('trauma',-2,-7.4,10,6,0x573129);
+  floorZone('trauma_treatment',13,-7.4,10,6,0x513729);
+  meshBox(48,.025,2.4,new THREE.MeshStandardMaterial({color:0x203846,emissive:0x0b2530,emissiveIntensity:.5}),0,.04,0);
+  // Waiting room furniture.
+  [-9.5,-7.8,-6.1].forEach(x=>{addChair(x,3.0,Math.PI);addChair(x,4.2,Math.PI);});
+  // Registration counter.
+  meshBox(3.2,1.05,1.0,materials.desk,-5,.53,6.0);
+  // Examination room dividers.
+  [-.5,3.5,7.5,11.5].forEach(x=>meshBox(.08,2.5,5.7,materials.glass,x,1.25,7.4));
+  // Trauma and treatment beds.
+  addBed(-3.2,-7.4);addBed(.0,-7.4);addBed(2.9,-7.4);
+  addBed(11,-7.4);addBed(14,-7.4);addBed(17,-7.4);
+  addBed(14.7,7.4);addBed(17.5,7.4);
+  // Corridor dividers and signs.
+  meshBox(.08,2.6,10,materials.glass,-9.5,1.3,7.5);
+  meshBox(.08,2.6,10,materials.glass,10.7,1.3,7.5);
+  meshBox(.08,2.6,10,materials.glass,6.8,1.3,-7.4);
+  addSign('ARRIVALS',-22.5,3.4,0,3.8);
+  addSign('TRIAGE',-14,3.2,-2.5,4.0);
+  addSign('REGISTRATION',-5,3.2,10.1,5.2);
+  addSign('EXAMINATION',5.5,3.2,10.1,5.0);
+  addSign('NON-TRAUMA TREATMENT',16,3.2,10.1,6.4);
+  addSign('TRAUMA / STABILISATION',-2,3.2,-10.2,6.2);
+  addSign('TRAUMA TREATMENT',13,3.2,-10.2,5.6);
+  addSign('DISCHARGE',23,3.4,0,4.2);
+  // Directional floor lines.
+  const lineMat1=new THREE.MeshStandardMaterial({color:0x66d6e8,emissive:0x164852,emissiveIntensity:1});
+  const lineMat2=new THREE.MeshStandardMaterial({color:0xff9977,emissive:0x4a1e13,emissiveIntensity:1});
+  meshBox(28,.04,.08,lineMat1,-1,.08,3.35);
+  meshBox(30,.04,.08,lineMat2,0,.08,-3.35);
+  // Plants/visual anchors.
+  for (const [x,z] of [[-20,11],[21,11],[-21,-11],[21,-11]]) {
+    const pot=new THREE.Mesh(new THREE.CylinderGeometry(.35,.45,.55,12),new THREE.MeshStandardMaterial({color:0x654736,roughness:.8}));pot.position.set(x,.28,z);facility.add(pot);
+    const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(.65,1),new THREE.MeshStandardMaterial({color:0x3d7a5f,roughness:.9}));crown.position.set(x,1.05,z);facility.add(crown);
+  }
+}
+buildFacility();
+
+// ---------- Resources ----------
+function resourcePosition(stage, idx, count) {
+  const c=ZONES[stage];
+  const spacing = stage === 'examination' ? 2.6 : 2.5;
+  const offset=(idx-(count-1)/2)*spacing;
+  if (stage === 'triage') return new THREE.Vector3(c.x,0,c.z+offset);
+  if (stage === 'registration') return new THREE.Vector3(c.x+offset,0,c.z);
+  if (stage === 'examination') return new THREE.Vector3(c.x+offset,0,c.z);
+  return new THREE.Vector3(c.x+offset,0,c.z);
+}
+function queueBase(stage) {
+  const c=ZONES[stage];
+  if(stage==='triage') return new THREE.Vector3(c.x-4.6,0,c.z);
+  if(stage==='registration'||stage==='examination'||stage==='non_trauma_treatment') return new THREE.Vector3(c.x-3.6,0,c.z-2.2);
+  return new THREE.Vector3(c.x-3.8,0,c.z+2.2);
