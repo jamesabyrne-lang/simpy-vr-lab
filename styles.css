@@ -31,3 +31,135 @@
 
 .resource-panel{position:absolute;z-index:16;right:14px;top:330px;width:300px;border-radius:16px;padding:11px}
 @media(max-width:1000px){.resource-panel{display:none}}
+
+
+/* --- 2026 visual production pass ------------------------------------------------ */
+:root{
+  --panel:rgba(17,36,45,.86);
+  --border:rgba(198,230,238,.23);
+  --text:#f7fbfd;
+  --muted:#afc3cc;
+  --cyan:#79d9e8;
+  --mint:#7be0bd;
+  --coral:#f2947d;
+  --gold:#f1c56d;
+}
+.glass{
+  background:
+    linear-gradient(145deg,rgba(24,49,59,.92),rgba(10,27,36,.78));
+  border:1px solid rgba(202,232,239,.20);
+  box-shadow:0 18px 60px rgba(15,31,39,.24),inset 0 1px 0 rgba(255,255,255,.055);
+  backdrop-filter:blur(20px) saturate(135%);
+}
+.topbar{
+  border-radius:20px;
+  box-shadow:0 14px 45px rgba(17,39,48,.22);
+}
+.brand h1{font-weight:760;letter-spacing:-.045em}
+.brand p{color:#bfd0d6}
+.eyebrow{color:#90e4ef;text-shadow:0 0 18px rgba(121,217,232,.18)}
+.view-actions button,.playback button,.event-head button{
+  transition:background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease;
+  background:rgba(255,255,255,.055);
+}
+.view-actions button:hover,.playback button:hover,.event-head button:hover{
+  transform:translateY(-1px);
+  border-color:rgba(144,228,239,.34);
+  box-shadow:0 6px 20px rgba(0,0,0,.16);
+}
+#vrSlot button{
+  box-shadow:0 0 0 1px rgba(123,224,189,.07),0 8px 25px rgba(25,116,96,.16)!important;
+}
+.control-panel{
+  border-radius:22px;
+  box-shadow:0 22px 70px rgba(13,31,39,.28);
+}
+.control-panel details{
+  border-top-color:rgba(205,234,240,.12);
+}
+.control-panel summary{
+  color:#e8f2f5;
+  letter-spacing:.05em;
+}
+.control-panel select,.control-panel input[type=number],.playback select{
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+  border-color:rgba(210,237,242,.14);
+  transition:border-color .18s ease,box-shadow .18s ease;
+}
+.control-panel select:focus,.control-panel input[type=number]:focus,.playback select:focus{
+  border-color:rgba(121,217,232,.55);
+  box-shadow:0 0 0 3px rgba(121,217,232,.10);
+}
+input[type=range]{
+  height:4px;
+  accent-color:#79d9e8;
+}
+.primary{
+  background:linear-gradient(135deg,#73dcea,#7be0bd);
+  box-shadow:0 9px 28px rgba(80,197,188,.20);
+  transition:filter .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.primary:hover:not(:disabled){
+  filter:brightness(1.06);
+  transform:translateY(-1px);
+  box-shadow:0 13px 34px rgba(80,197,188,.26);
+}
+.secondary{
+  background:linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.035));
+}
+.kpi-strip{
+  border-radius:19px;
+  overflow:hidden;
+  box-shadow:0 18px 60px rgba(8,26,35,.25);
+}
+.kpi-strip article{
+  position:relative;
+  padding:12px 15px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+}
+.kpi-strip article::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,rgba(121,217,232,.72),transparent);
+}
+.kpi-strip strong{font-size:20px;font-weight:750}
+.playback{
+  border-radius:17px;
+  box-shadow:0 15px 48px rgba(7,25,34,.23);
+}
+.inspector,.resource-panel,.event-panel{
+  border-radius:20px;
+  box-shadow:0 20px 62px rgba(8,27,35,.25);
+}
+.resource-card{
+  background:linear-gradient(160deg,rgba(255,255,255,.055),rgba(255,255,255,.022));
+  border-color:rgba(190,224,232,.12);
+}
+.resource-card .bar{
+  background:rgba(255,255,255,.08);
+  height:5px;
+}
+.resource-card .bar i{
+  background:linear-gradient(90deg,#79d9e8,#7be0bd);
+  box-shadow:0 0 12px rgba(123,224,189,.18);
+}
+.inspector-grid>div{
+  background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  border:1px solid rgba(203,232,238,.07);
+}
+.legend{
+  border-radius:14px;
+  box-shadow:0 12px 40px rgba(9,28,36,.20);
+}
+.badge.ready{
+  box-shadow:0 0 20px rgba(123,224,189,.10);
+}
+.event-log li,.timeline-list li{
+  border-top-color:rgba(205,233,238,.07);
+}
+@media(min-width:1100px){
+  .control-panel{width:325px}
+  .inspector,.resource-panel,.event-panel{width:310px}
+}
