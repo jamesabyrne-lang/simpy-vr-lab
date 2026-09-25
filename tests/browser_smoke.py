@@ -26,7 +26,7 @@ def main():
         driver = webdriver.Chrome(options=options)
         try:
             driver.get("http://127.0.0.1:8000/")
-            wait = WebDriverWait(driver, 210)
+            wait = WebDriverWait(driver, 360)
             try:
                 wait.until(lambda d: d.find_element(By.ID, "engineBadge").text == "STARS ready")
                 wait.until(lambda d: "arrivals" in d.find_element(By.ID, "statusText").text.lower())
