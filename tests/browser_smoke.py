@@ -45,8 +45,8 @@ def main():
                 if syntax:
                     fail_with_diagnostics(driver, "Browser JavaScript syntax error", seen_logs)
                 if badge == "Load failed":
-                    fail_with_diagnostics(driver, "Pyodide/STARS runtime reported load failure", seen_logs)
-                if badge == "STARS ready" and "arrivals" in status.lower():
+                    fail_with_diagnostics(driver, "Pyodide/SimPy runtime reported load failure", seen_logs)
+                if badge == "SimPy ready" and "arrivals" in status.lower():
                     break
                 time.sleep(2)
             else:
