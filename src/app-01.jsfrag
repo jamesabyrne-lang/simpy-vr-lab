@@ -1,0 +1,70 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { VRButton } from 'three/addons/webxr/VRButton.js';
+
+const $ = (id) => document.getElementById(id);
+const UI = {
+  demand: $('demandMultiplier'), probTrauma: $('probTrauma'), ntTreatP: $('nonTraumaTreatP'),
+  nTriage: $('nTriage'), nReg: $('nReg'), nExam: $('nExam'), nTrauma: $('nTrauma'),
+  nCubicles1: $('nCubicles1'), nCubicles2: $('nCubicles2'),
+  triageMean: $('triageMean'), regMean: $('regMean'), examMean: $('examMean'), traumaMean: $('traumaMean'),
+  ntTreatMean: $('ntTreatMean'), traumaTreatMean: $('traumaTreatMean'), seed: $('seed'),
+  run: $('runButton'), baseline: $('baselineButton'), playPause: $('playPause'), restart: $('restartButton'),
+  speed: $('speed'), timeline: $('timeline'), timelineReadout: $('timelineReadout'), status: $('statusText'), badge: $('engineBadge'),
+  clock: $('kpiClock'), inSystem: $('kpiInSystem'), waiting: $('kpiWaiting'), inService: $('kpiService'), completed: $('kpiCompleted'),
+  inspector: $('inspector'), resourceCards: $('resourceCards'), eventPanel: $('eventPanel'), eventLog: $('eventLog'),
+  eventToggle: $('eventToggle'), eventClose: $('eventClose')
+};
+
+const BASELINE = {
+  n_triage: 1, n_reg: 1, n_exam: 3, n_trauma: 2, n_cubicles_1: 1, n_cubicles_2: 1,
+  triage_mean: 3, reg_mean: 5, exam_mean: 16, trauma_mean: 90,
+  trauma_treat_mean: 30, non_trauma_treat_mean: 13.3,
+  non_trauma_treat_p: 0.60, prob_trauma: 0.12, demand_multiplier: 1, duration: 1140, seed: 17
+};
+const RESOURCE_LABELS = {
+  triage: 'Triage', registration: 'Registration', examination: 'Examination', trauma: 'Trauma stabilisation',
+  non_trauma_treatment: 'Non-trauma treatment', trauma_treatment: 'Trauma treatment'
+};
+const STAGE_ORDER = ['triage','registration','examination','non_trauma_treatment','trauma','trauma_treatment'];
+const ZONES = {
+  entrance: new THREE.Vector3(-23, 0, 0),
+  triage: new THREE.Vector3(-14, 0, 0),
+  registration: new THREE.Vector3(-5, 0, 7.4),
+  examination: new THREE.Vector3(5.5, 0, 7.4),
+  non_trauma_treatment: new THREE.Vector3(16, 0, 7.4),
+  trauma: new THREE.Vector3(-2, 0, -7.4),
+  trauma_treatment: new THREE.Vector3(13, 0, -7.4),
+  exit: new THREE.Vector3(23, 0, 0)
+};
+const ZONE_COLOURS = {
+  triage: 0x57d6ff, registration: 0x6edac8, examination: 0x79b8ff,
+  non_trauma_treatment: 0x6dddc9, trauma: 0xff9977, trauma_treatment: 0xffb36f
+};
+
+let pyodide = null;
+let modelData = null;
+let simTime = 0;
+let playing = true;
+let lastFrame = performance.now();
+let lastUiRefresh = -Infinity;
+let selected = null;
+let patientAgents = [];
+let resourceUnits = new Map();
+let clickable = [];
+let runGeneration = 0;
+
+// ---------- Three.js scene ----------
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x06101b);
+scene.fog = new THREE.FogExp2(0x06101b, 0.0135);
+
+const renderer = new THREE.WebGLRenderer({ canvas: $('sceneCanvas'), antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.xr.enabled = true;
