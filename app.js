@@ -364,23 +364,54 @@ function queuePosition(stage, idx) {
   return new THREE.Vector3(b.x+(col-2.5)*.72*dir,0,b.z+(stage==='trauma'||stage==='trauma_treatment'?-1:1)*row*.85);
 }
 function makeResourceUnit(stage, idx, count) {
-  const g=new THREE.Group(); const color=ZONE_COLOURS[stage]||0x56d7ff;
-  const shellMat=new THREE.MeshStandardMaterial({color:stage.includes('trauma')?0x5d4a43:0x324d5a,roughness:.44,metalness:.18});
+  const g=new THREE.Group();
+  const color=ZONE_COLOURS[stage]||0x56d7ff;
+  const shellMat=new THREE.MeshStandardMaterial({color:stage.includes('trauma')?0x8f6d61:0x6d8c93,roughness:.48,metalness:.10});
+  const accentMat=new THREE.MeshStandardMaterial({color,roughness:.50,metalness:.04,emissive:color,emissiveIntensity:.04});
+  const addLocal=(mesh,x,y,z)=>{mesh.position.set(x,y,z);mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);return mesh;};
+
   if(stage==='triage'||stage==='registration') {
-    const desk=new THREE.Mesh(new THREE.BoxGeometry(1.6,.9,1.05),shellMat);desk.position.y=.45;g.add(desk);
-    const screen=new THREE.Mesh(new THREE.BoxGeometry(.55,.48,.08),materials.dark);screen.position.set(0,.98,-.15);g.add(screen);
+    addLocal(new THREE.Mesh(new THREE.BoxGeometry(1.65,.86,1.08),shellMat),0,.43,0);
+    addLocal(new THREE.Mesh(new THREE.BoxGeometry(1.76,.055,1.16),materials.wood),0,.90,0);
+    const screen=addLocal(new THREE.Mesh(new THREE.BoxGeometry(.62,.46,.07),materials.black),-.18,1.23,-.13);
+    const display=new THREE.Mesh(new THREE.PlaneGeometry(.52,.35),materials.screen);display.position.set(-.18,1.23,-.091);g.add(display);
+    addLocal(new THREE.Mesh(new THREE.BoxGeometry(.46,.025,.18),materials.dark),.25,.94,.18);
+    const stool=new THREE.Mesh(new THREE.CylinderGeometry(.28,.30,.09,16),accentMat);stool.position.set(.0,.46,.84);g.add(stool);
+    const stem=new THREE.Mesh(new THREE.CylinderGeometry(.045,.055,.40,10),materials.rail);stem.position.set(0,.23,.84);g.add(stem);
+    const base=new THREE.Mesh(new THREE.CylinderGeometry(.25,.32,.05,12),materials.rail);base.position.set(0,.025,.84);g.add(base);
+    const privacy=new THREE.Mesh(new THREE.BoxGeometry(.04,.72,.72),materials.glass);privacy.position.set(.80,1.20,0);g.add(privacy);
+    void screen;
   } else if(stage==='examination') {
-    const couch=new THREE.Mesh(new THREE.BoxGeometry(1.9,.55,.8),materials.bed);couch.position.y=.48;g.add(couch);
-    const stand=new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,1.5,10),materials.rail);stand.position.set(.8,1.1,.55);g.add(stand);
+    const couch=addLocal(new THREE.Mesh(new THREE.BoxGeometry(1.95,.46,.82),materials.bed),0,.49,0);
+    couch.rotation.z=.01;
+    addLocal(new THREE.Mesh(new THREE.BoxGeometry(.55,.10,.70),materials.bedding),-.62,.77,0);
+    const paper=new THREE.Mesh(new THREE.BoxGeometry(1.10,.025,.73),materials.whitePlastic);paper.position.set(.30,.74,0);g.add(paper);
+    const lampPole=new THREE.Mesh(sharedGeo.pole,materials.rail);lampPole.position.set(.78,.90,.55);g.add(lampPole);
+    const lampHead=new THREE.Mesh(new THREE.CylinderGeometry(.20,.27,.10,14),materials.whitePlastic);lampHead.rotation.z=Math.PI/2;lampHead.position.set(.68,1.63,.42);g.add(lampHead);
+    const lampGlow=new THREE.PointLight(0xe9fbff,1.6,2.4,2);lampGlow.position.set(.55,1.45,.35);g.add(lampGlow);
+    const trolley=new THREE.Mesh(new THREE.BoxGeometry(.48,.58,.38),materials.tealPlastic);trolley.position.set(-.88,.35,.63);g.add(trolley);
+    const screen=new THREE.Mesh(new THREE.BoxGeometry(.52,.38,.06),materials.black);screen.position.set(.92,1.38,-.44);g.add(screen);
+    const display=new THREE.Mesh(new THREE.PlaneGeometry(.44,.30),materials.screen);display.position.set(.92,1.38,-.407);g.add(display);
   } else {
-    const bed=new THREE.Mesh(new THREE.BoxGeometry(2.0,.58,.86),materials.bed);bed.position.y=.48;g.add(bed);
-    const head=new THREE.Mesh(new THREE.BoxGeometry(.12,.8,.9),materials.rail);head.position.set(-1, .8,0);g.add(head);
+    addLocal(new THREE.Mesh(new THREE.BoxGeometry(2.06,.46,.88),materials.bed),0,.48,0);
+    addLocal(new THREE.Mesh(new THREE.BoxGeometry(1.22,.045,.84),new THREE.MeshStandardMaterial({color:stage==='trauma'?0xd6a696:0xe1bea2,roughness:.86})),.28,.74,0);
+    addLocal(new THREE.Mesh(new THREE.BoxGeometry(.44,.11,.64),materials.whitePlastic),-.67,.78,0);
+    addLocal(new THREE.Mesh(new THREE.BoxGeometry(.11,.78,.92),materials.rail),-1.03,.83,0);
+    const iv=new THREE.Mesh(sharedGeo.pole,materials.rail);iv.position.set(.90,.80,.56);g.add(iv);
+    const hook=new THREE.Mesh(new THREE.TorusGeometry(.09,.018,6,14,Math.PI),materials.rail);hook.position.set(.90,1.58,.56);hook.rotation.z=Math.PI;g.add(hook);
+    const bag=new THREE.Mesh(new THREE.BoxGeometry(.18,.32,.07),new THREE.MeshStandardMaterial({color:0xbbe2e6,transparent:true,opacity:.72,roughness:.25}));bag.position.set(.82,1.35,.56);g.add(bag);
+    const monitorStand=new THREE.Mesh(new THREE.CylinderGeometry(.04,.055,1.35,8),materials.rail);monitorStand.position.set(-.82,.72,.58);g.add(monitorStand);
+    const screen=new THREE.Mesh(new THREE.BoxGeometry(.54,.40,.07),materials.black);screen.position.set(-.82,1.42,.58);g.add(screen);
+    const display=new THREE.Mesh(new THREE.PlaneGeometry(.46,.32),materials.screen);display.position.set(-.82,1.42,.619);g.add(display);
+    const tray=new THREE.Mesh(new THREE.BoxGeometry(.50,.05,.38),materials.rail);tray.position.set(.82,.92,-.62);g.add(tray);
   }
-  const beaconMat=new THREE.MeshStandardMaterial({color:0x68e8c0,emissive:0x174638,emissiveIntensity:1.8});
-  const beacon=new THREE.Mesh(new THREE.SphereGeometry(.12,12,8),beaconMat);beacon.position.set(0,1.72,.0);g.add(beacon);
-  const label=makeTextSprite(`${RESOURCE_LABELS[stage]} ${idx+1}`,{scaleX:2.6,scaleY:.53,fontSize:44,stroke:'rgba(255,255,255,.18)'});label.position.set(0,2.25,0);g.add(label);
+
+  const floorDisc=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.025,28),new THREE.MeshBasicMaterial({color,transparent:true,opacity:.36}));floorDisc.position.y=.018;g.add(floorDisc);
+  const beaconMat=new THREE.MeshStandardMaterial({color:0x68e8c0,emissive:0x174638,emissiveIntensity:2.1,roughness:.30});
+  const beacon=new THREE.Mesh(new THREE.SphereGeometry(.12,14,10),beaconMat);beacon.position.set(0,1.88,.0);g.add(beacon);
+  const label=makeTextSprite(RESOURCE_LABELS[stage]+' '+(idx+1),{scaleX:2.8,scaleY:.56,fontSize:42,stroke:'rgba(255,255,255,.22)',background:'rgba(38,67,73,.92)'});label.position.set(0,2.35,0);g.add(label);
   const p=resourcePosition(stage,idx,count);g.position.copy(p);g.userData={kind:'resource',stage,index:idx+1,beacon};
-  g.traverse(o=>{if(o.isMesh){o.userData.pickRoot=g;clickable.push(o);o.castShadow=true;}});
+  g.traverse(o=>{if(o.isMesh){o.userData.pickRoot=g;clickable.push(o);o.castShadow=true;o.receiveShadow=true;}});
   dynamicResources.add(g);return g;
 }
 function rebuildResources(capacities) {
@@ -392,24 +423,80 @@ function rebuildResources(capacities) {
 rebuildResources({triage:1,registration:1,examination:3,trauma:2,non_trauma_treatment:1,trauma_treatment:1});
 
 // ---------- Patient figures ----------
+function pseudo(id,salt=0){
+  let x=(id*1664525+1013904223+salt*374761393)>>>0;
+  x^=x>>>13;x=Math.imul(x,1274126177)>>>0;x^=x>>>16;
+  return (x>>>0)/4294967295;
+}
 function makePatientFigure(patient) {
   const group=new THREE.Group();
-  const pathColor=patient.pathway==='trauma'?0xff8d6d:0x66d6e8;
-  const skinPalette=[0xf0c7a8,0xc98e68,0x8c5a3e,0xe2ad82];
-  const skin=skinPalette[patient.id%skinPalette.length];
-  const cloth=new THREE.MeshStandardMaterial({color:pathColor,roughness:.72});
-  const skinMat=new THREE.MeshStandardMaterial({color:skin,roughness:.82});
-  const trouser=new THREE.MeshStandardMaterial({color:0x263746,roughness:.8});
-  const torso=new THREE.Mesh(new THREE.CylinderGeometry(.22,.31,.78,8),cloth);torso.position.y=1.12;group.add(torso);
-  const head=new THREE.Mesh(new THREE.IcosahedronGeometry(.22,2),skinMat);head.position.y=1.72;group.add(head);
-  const limbGeo=new THREE.CylinderGeometry(.055,.065,.65,7);
-  for(const side of [-1,1]){
-    const arm=new THREE.Mesh(limbGeo,skinMat);arm.position.set(.30*side,1.08,0);arm.rotation.z=.10*side;group.add(arm);
-    const leg=new THREE.Mesh(limbGeo,trouser);leg.position.set(.13*side,.43,0);group.add(leg);
+  const id=patient.id;
+  const skinPalette=[0xf2c9aa,0xe2b18d,0xc98f68,0xa96f50,0x7c4e37,0x5d3c2c];
+  const tops=[0x44768a,0x6b789b,0x9a6c78,0x5e826e,0x9b7857,0x596978,0x88739b,0x3f7f7c];
+  const trousers=[0x263746,0x35404a,0x443e43,0x293b36,0x4f5660];
+  const hairPalette=[0x231a17,0x3c2a20,0x6a4a32,0xa2774d,0xd0b074,0x17191b,0x70665e];
+  const skin=skinPalette[Math.floor(pseudo(id,1)*skinPalette.length)%skinPalette.length];
+  const top=tops[Math.floor(pseudo(id,2)*tops.length)%tops.length];
+  const bottom=trousers[Math.floor(pseudo(id,3)*trousers.length)%trousers.length];
+  const hair=hairPalette[Math.floor(pseudo(id,4)*hairPalette.length)%hairPalette.length];
+  const height=.88+pseudo(id,5)*.18;
+  const build=.88+pseudo(id,6)*.20;
+  const cloth=new THREE.MeshStandardMaterial({color:top,roughness:.76});
+  const cloth2=new THREE.MeshStandardMaterial({color:bottom,roughness:.82});
+  const skinMat=new THREE.MeshStandardMaterial({color:skin,roughness:.86});
+  const hairMat=new THREE.MeshStandardMaterial({color:hair,roughness:.88});
+  const shoeMat=new THREE.MeshStandardMaterial({color:pseudo(id,9)>.5?0x242b30:0x6a5a4d,roughness:.74});
+
+  const torsoShape=pseudo(id,7);
+  let torso;
+  if(torsoShape<.34) torso=new THREE.Mesh(new THREE.CylinderGeometry(.22*build,.31*build,.76,10),cloth);
+  else if(torsoShape<.68) torso=new THREE.Mesh(new THREE.CapsuleGeometry(.25*build,.42,5,9),cloth);
+  else torso=new THREE.Mesh(new THREE.BoxGeometry(.48*build,.72,.30*build),cloth);
+  torso.position.y=1.14;group.add(torso);
+
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(.075,.085,.12,8),skinMat);neck.position.y=1.55;group.add(neck);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.215,14,10),skinMat);head.scale.set(1,.98,.92);head.position.y=1.76;group.add(head);
+
+  // Hair styles: cap, crop, bun or bald.
+  const hairStyle=Math.floor(pseudo(id,8)*5);
+  if(hairStyle===0||hairStyle===1){
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(.222,14,8,0,Math.PI*2,0,Math.PI*.48),hairMat);cap.position.y=1.80;cap.scale.set(1.02,.82,.95);group.add(cap);
+  } else if(hairStyle===2){
+    const cap=new THREE.Mesh(new THREE.SphereGeometry(.224,14,8,0,Math.PI*2,0,Math.PI*.52),hairMat);cap.position.y=1.81;group.add(cap);
+    const bun=new THREE.Mesh(new THREE.SphereGeometry(.095,10,8),hairMat);bun.position.set(0,1.91,-.16);group.add(bun);
+  } else if(hairStyle===3){
+    const crop=new THREE.Mesh(new THREE.BoxGeometry(.31,.08,.28),hairMat);crop.position.set(0,1.94,-.01);crop.rotation.x=-.08;group.add(crop);
   }
-  const badge=new THREE.Mesh(new THREE.CircleGeometry(.09,16),new THREE.MeshBasicMaterial({color:0xffffff}));badge.position.set(0,1.22,.27);group.add(badge);
-  group.scale.setScalar(.92); group.visible=false; group.userData={kind:'patient',patient,initialised:false};
-  group.traverse(o=>{if(o.isMesh){o.userData.pickRoot=group;clickable.push(o);o.castShadow=true;}});
+
+  // Face/nose and optional glasses.
+  const nose=new THREE.Mesh(new THREE.ConeGeometry(.035,.075,6),skinMat);nose.rotation.x=Math.PI/2;nose.position.set(0,1.76,.205);group.add(nose);
+  if(pseudo(id,10)>.76){
+    const glassMat=new THREE.MeshBasicMaterial({color:0x26343a});
+    for(const sx of [-.072,.072]){const lens=new THREE.Mesh(new THREE.TorusGeometry(.055,.009,5,12),glassMat);lens.position.set(sx,1.80,.202);group.add(lens);}
+    const bridge=new THREE.Mesh(new THREE.BoxGeometry(.045,.012,.012),glassMat);bridge.position.set(0,1.80,.205);group.add(bridge);
+  }
+
+  const upperArmGeo=new THREE.CylinderGeometry(.052*build,.065*build,.56,8);
+  const legGeo=new THREE.CylinderGeometry(.07*build,.082*build,.68,8);
+  const leftArm=new THREE.Mesh(upperArmGeo,cloth);leftArm.position.set(-.30*build,1.10,0);leftArm.rotation.z=-.08;group.add(leftArm);
+  const rightArm=new THREE.Mesh(upperArmGeo,cloth);rightArm.position.set(.30*build,1.10,0);rightArm.rotation.z=.08;group.add(rightArm);
+  for(const side of [-1,1]){
+    const hand=new THREE.Mesh(new THREE.SphereGeometry(.065,8,6),skinMat);hand.position.set(.32*build*side,.78,0);group.add(hand);
+    const leg=new THREE.Mesh(legGeo,cloth2);leg.position.set(.13*build*side,.44,0);group.add(leg);
+    const shoe=new THREE.Mesh(new THREE.BoxGeometry(.17*build,.10,.28),shoeMat);shoe.position.set(.13*build*side,.08,.06);group.add(shoe);
+  }
+
+  // Pathway shown as a small wristband/badge rather than identical clothing.
+  const pathColor=patient.pathway==='trauma'?0xe67862:0x4f9fb4;
+  const badge=new THREE.Mesh(new THREE.CircleGeometry(.075,14),new THREE.MeshBasicMaterial({color:pathColor}));badge.position.set(0,1.25,.245);group.add(badge);
+  if(pseudo(id,11)>.72){
+    const bag=new THREE.Mesh(new THREE.BoxGeometry(.28,.36,.16),new THREE.MeshStandardMaterial({color:0x6f604e,roughness:.86}));bag.position.set(-.32,1.02,-.14);bag.rotation.z=.08;group.add(bag);
+  }
+
+  group.scale.set(build*.94,height,build*.94);
+  group.visible=false;
+  group.userData={kind:'patient',patient,initialised:false,leftArm,rightArm,walkPhase:pseudo(id,12)*Math.PI*2,lastTarget:new THREE.Vector3()};
+  group.traverse(o=>{if(o.isMesh){o.userData.pickRoot=group;clickable.push(o);o.castShadow=true;o.receiveShadow=true;}});
   patientsGroup.add(group);return group;
 }
 function rebuildPatients(){while(patientsGroup.children.length)patientsGroup.remove(patientsGroup.children[0]);clickable=clickable.filter(o=>o.userData?.pickRoot?.userData?.kind!=='patient');patientAgents=[];if(!modelData)return;for(const p of modelData.patients)patientAgents.push(makePatientFigure(p));}
@@ -430,8 +517,8 @@ function patientState(patient,t,queueMaps){
 }
 function makeQueueMaps(t){const maps=new Map();for(const stage of STAGE_ORDER){const waiting=[];for(const p of modelData?.patients||[]){const s=p.stages.find(x=>x.stage===stage);if(s&&s.queue_enter<=t&&(s.service_start==null||s.service_start>t))waiting.push({id:p.id,q:s.queue_enter});}waiting.sort((a,b)=>a.q-b.q||a.id-b.id);maps.set(stage,new Map(waiting.map((x,i)=>[x.id,i])));}return maps;}
 function liveResourceState(stage,t){const cap=modelData?.resource_capacities?.[stage]||0;let busy=0,busyMinutes=0;for(const p of modelData?.patients||[]){for(const s of p.stages){if(s.stage!==stage||s.service_start==null)continue;const end=s.service_end==null?modelData.config.duration:s.service_end;if(s.service_start<=t&&end>t)busy++;busyMinutes+=Math.max(0,Math.min(t,end)-Math.min(t,s.service_start));}}const util=t>0&&cap?Math.min(1,busyMinutes/(cap*t)):0;return{cap,busy,util};}
-function updateVisuals(dt){if(!modelData)return;const qMaps=makeQueueMaps(simTime);const alpha=1-Math.exp(-8*Math.min(.08,dt));patientAgents.forEach((agent)=>{const p=agent.userData.patient,s=patientState(p,simTime,qMaps);agent.visible=!!s;if(!s)return;if(!agent.userData.initialised){agent.position.copy(p.arrival<=simTime?ZONES.entrance:s.target);agent.userData.initialised=true;}agent.position.lerp(s.target,alpha);agent.position.y=.02+Math.sin(performance.now()/340+p.id)*.014;agent.userData.state=s;});
-  for(const [stage,units] of resourceUnits){const active=new Set();for(const p of modelData.patients){const s=p.stages.find(x=>x.stage===stage);if(s&&s.service_start!=null&&s.service_start<=simTime&&(s.service_end==null||s.service_end>simTime))active.add(s.resource_id);}units.forEach((u,i)=>{const busy=active.has(i+1),b=u.userData.beacon;b.material.color.setHex(busy?0xf7c76a:0x68e8c0);b.material.emissive.setHex(busy?0x5a350d:0x174638);});}
+function updateVisuals(dt){if(!modelData)return;const qMaps=makeQueueMaps(simTime);const alpha=1-Math.exp(-7*Math.min(.08,dt));patientAgents.forEach((agent)=>{const p=agent.userData.patient,s=patientState(p,simTime,qMaps);agent.visible=!!s;if(!s)return;if(!agent.userData.initialised){agent.position.copy(p.arrival<=simTime?ZONES.entrance:s.target);agent.userData.lastTarget.copy(s.target);agent.userData.initialised=true;}const before=agent.position.clone();agent.position.lerp(s.target,alpha);const delta=agent.position.clone().sub(before);const moving=delta.lengthSq()>.00002;if(moving){const desired=Math.atan2(delta.x,delta.z);let diff=desired-agent.rotation.y;diff=Math.atan2(Math.sin(diff),Math.cos(diff));agent.rotation.y+=diff*Math.min(1,dt*7);}const phase=performance.now()/230+agent.userData.walkPhase;if(moving){agent.userData.leftArm.rotation.x=Math.sin(phase)*.30;agent.userData.rightArm.rotation.x=-Math.sin(phase)*.30;agent.position.y=.025+Math.abs(Math.sin(phase))*0.018;}else{agent.userData.leftArm.rotation.x*=.90;agent.userData.rightArm.rotation.x*=.90;agent.position.y=.02+Math.sin(performance.now()/620+p.id)*.008;}if(s.kind==='service'){agent.rotation.y*=.92;}agent.userData.lastTarget.copy(s.target);agent.userData.state=s;});
+  for(const [stage,units] of resourceUnits){const active=new Set();for(const p of modelData.patients){const s=p.stages.find(x=>x.stage===stage);if(s&&s.service_start!=null&&s.service_start<=simTime&&(s.service_end==null||s.service_end>simTime))active.add(s.resource_id);}units.forEach((u,i)=>{const busy=active.has(i+1),b=u.userData.beacon;b.material.color.setHex(busy?0xf2b85e:0x68d9b2);b.material.emissive.setHex(busy?0x7a3f0b:0x174638);b.scale.setScalar(busy?1.18:1);});}
 }
 
 function formatClock(mins){const total=6*60+Math.max(0,Math.floor(mins));const h=Math.floor(total/60)%24,m=total%60;return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;}
@@ -504,7 +591,7 @@ UI.run.addEventListener('click',runSimulation);UI.baseline.addEventListener('cli
 UI.playPause.addEventListener('click',()=>{playing=!playing;UI.playPause.textContent=playing?'Ⅱ':'▶';lastFrame=performance.now();});
 UI.timeline.addEventListener('input',()=>{simTime=Number(UI.timeline.value);playing=false;UI.playPause.textContent='▶';lastFrame=performance.now();updateVisuals(.1);updateUi();updateWorldBoard();});
 UI.eventToggle.addEventListener('click',()=>{UI.eventPanel.hidden=false;updateEventLog();});UI.eventClose.addEventListener('click',()=>UI.eventPanel.hidden=true);
-const views={overview:[[26,22,32],[0,1.3,0]],triage:[[-8,7,13],[-14,1.2,0]],trauma:[[9,7,-18],[5,1.2,-7.4]],nontrauma:[[9,8,20],[6,1.2,7.4]]};
+const views={overview:[[28,20,34],[0,1.1,0]],triage:[[-8.5,5.8,11.5],[-14,1.15,0]],trauma:[[7.5,5.3,-16.5],[3.5,1.05,-7.4]],nontrauma:[[11,6.2,18],[7.5,1.05,7.4]]};
 document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{const v=views[b.dataset.view];camera.position.set(...v[0]);controls.target.set(...v[1]);controls.update();}));
 
 const vrButton=VRButton.createButton(renderer,{optionalFeatures:['local-floor','bounded-floor']});$('vrSlot').appendChild(vrButton);
