@@ -20,52 +20,103 @@
 <main id="app">
   <section id="viewport" aria-label="STARS treatment-centre 3D simulation">
     <canvas id="sceneCanvas"></canvas>
+
     <header class="topbar glass">
-      <div class="brand"><div class="eyebrow">STARS · SIMPY · WEBXR</div><h1>Treatment Centre VR</h1><p id="statusText">Loading Python runtime…</p></div>
+      <div class="brand">
+        <div class="eyebrow">STARS · SIMPY · WEBXR</div>
+        <h1>Treatment Centre VR</h1>
+        <p id="statusText">Loading Python runtime…</p>
+      </div>
       <div class="view-actions">
-        <button type="button" data-view="overview">Overview</button><button type="button" data-view="arrivals">Arrivals</button>
-        <button type="button" data-view="nontrauma">Non-trauma</button><button type="button" data-view="trauma">Trauma</button><div id="vrSlot"></div>
+        <button type="button" data-view="overview">Overview</button>
+        <button type="button" data-view="triage">Triage</button>
+        <button type="button" data-view="nontrauma">Non-trauma</button>
+        <button type="button" data-view="trauma">Trauma</button>
+        <button id="eventToggle" type="button">Events</button>
+        <div id="vrSlot"></div>
       </div>
     </header>
-    <aside class="control-panel glass" aria-label="Scenario controls">
-      <div class="panel-title"><div><div class="eyebrow">EXPERIMENT</div><h2>STARS scenario</h2></div><span id="engineBadge" class="badge">Python loading</span></div>
-      <div class="baseline-note">Baseline values reproduce the current STARS treatment-centre model.</div>
-      <details open><summary>Demand & pathway</summary>
-        <label><span>Demand multiplier <b id="arrivalScaleOut">1.00×</b></span><input id="arrivalScale" type="range" min="0.40" max="1.80" step="0.05" value="1" /></label>
-        <label><span>Trauma probability <b id="traumaProbOut">12%</b></span><input id="traumaProb" type="range" min="0" max="0.40" step="0.01" value="0.12" /></label>
-        <label><span>Non-trauma treatment <b id="ntTreatProbOut">60%</b></span><input id="ntTreatProb" type="range" min="0" max="1" step="0.05" value="0.60" /></label>
-      </details>
-      <details open><summary>Capacity</summary><div class="field-grid">
-        <label class="compact"><span>Triage</span><select id="nTriage"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
-        <label class="compact"><span>Registration</span><select id="nReg"><option>1</option><option>2</option><option>3</option></select></label>
-        <label class="compact"><span>Examination</span><select id="nExam"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label>
-        <label class="compact"><span>Trauma bays</span><select id="nTrauma"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label>
-        <label class="compact"><span>Non-trauma cubicles</span><select id="nNTCub"><option selected>1</option><option>2</option><option>3</option><option>4</option></select></label>
-        <label class="compact"><span>Trauma cubicles</span><select id="nTCub"><option selected>1</option><option>2</option><option>3</option></select></label>
-      </div></details>
-      <details><summary>Service times</summary>
-        <label><span>Examination mean <b id="examMeanOut">16 min</b></span><input id="examMean" type="range" min="5" max="35" step="1" value="16" /></label>
-        <label><span>Trauma treatment mean <b id="traumaTreatMeanOut">30 min</b></span><input id="traumaTreatMean" type="range" min="10" max="75" step="1" value="30" /></label>
-        <label><span>Non-trauma treatment mean <b id="ntTreatMeanOut">13.3 min</b></span><input id="ntTreatMean" type="range" min="5" max="40" step="0.5" value="13.3" /></label>
-      </details>
-      <div class="field-grid two">
-        <label class="compact"><span>Random seed</span><input id="seed" type="number" min="0" max="999999" value="17" /></label>
-        <label class="compact"><span>Run length</span><select id="runLength"><option value="600">10 h</option><option value="1080">18 h</option><option value="1140" selected>19 h</option></select></label>
+
+    <aside class="control-panel glass" aria-label="STARS scenario controls">
+      <div class="panel-title">
+        <div><div class="eyebrow">EXPERIMENT</div><h2>STARS scenario</h2></div>
+        <span id="engineBadge" class="badge">Python loading</span>
       </div>
-      <div class="button-row"><button id="resetBaseline" type="button" class="secondary">Reset baseline</button><button id="runButton" type="button" class="primary" disabled>Run SimPy</button></div>
+      <div class="baseline-note">Controls modify genuine STARS scenario inputs. Reset restores the published baseline.</div>
+
+      <details open>
+        <summary>Demand & pathway</summary>
+        <label><span>Demand multiplier <b id="demandReadout">1.00×</b></span><input id="demandMultiplier" type="range" min="0.25" max="3" step="0.05" value="1" /></label>
+        <label><span>Trauma probability <b id="traumaProbReadout">12%</b></span><input id="probTrauma" type="range" min="0" max="1" step="0.01" value="0.12" /></label>
+        <label><span>Non-trauma treatment <b id="treatProbReadout">60%</b></span><input id="nonTraumaTreatP" type="range" min="0" max="1" step="0.01" value="0.60" /></label>
+      </details>
+
+      <details open>
+        <summary>Capacity</summary>
+        <div class="field-grid">
+          <label class="compact"><span>Triage bays</span><select id="nTriage"><option selected>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+          <label class="compact"><span>Registration clerks</span><select id="nReg"><option selected>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+          <label class="compact"><span>Examination rooms</span><select id="nExam"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option></select></label>
+          <label class="compact"><span>Trauma bays</span><select id="nTrauma"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></label>
+          <label class="compact"><span>Non-trauma cubicles</span><select id="nCubicles1"><option selected>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+          <label class="compact"><span>Trauma cubicles</span><select id="nCubicles2"><option selected>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></label>
+        </div>
+      </details>
+
+      <details>
+        <summary>Service-time means</summary>
+        <label><span>Triage mean</span><input id="triageMean" type="number" min="0.2" max="20" step="0.1" value="3" /></label>
+        <label><span>Registration mean</span><input id="regMean" type="number" min="0.2" max="30" step="0.1" value="5" /></label>
+        <label><span>Examination mean</span><input id="examMean" type="number" min="0.5" max="90" step="0.5" value="16" /></label>
+        <label><span>Trauma stabilisation mean</span><input id="traumaMean" type="number" min="1" max="240" step="1" value="90" /></label>
+        <label><span>Non-trauma treatment mean</span><input id="ntTreatMean" type="number" min="1" max="120" step="0.1" value="13.3" /></label>
+        <label><span>Trauma treatment mean</span><input id="traumaTreatMean" type="number" min="1" max="180" step="0.5" value="30" /></label>
+      </details>
+
+      <label class="compact"><span>Random seed</span><input id="seed" type="number" min="0" max="2147483647" value="17" /></label>
+      <div class="button-row">
+        <button id="baselineButton" type="button" class="secondary">Reset baseline</button>
+        <button id="runButton" type="button" class="primary" disabled>Run STARS simulation</button>
+      </div>
     </aside>
+
     <section class="kpi-strip glass" aria-label="Live model state">
-      <article><span>Simulation time</span><strong id="kpiClock">06:00</strong></article><article><span>In system</span><strong id="kpiSystem">0</strong></article>
-      <article><span>Waiting</span><strong id="kpiWaiting">0</strong></article><article><span>In service</span><strong id="kpiService">0</strong></article><article><span>Completed</span><strong id="kpiCompleted">0</strong></article>
+      <article><span>Simulation time</span><strong id="kpiClock">06:00</strong></article>
+      <article><span>In system</span><strong id="kpiInSystem">0</strong></article>
+      <article><span>Waiting</span><strong id="kpiWaiting">0</strong></article>
+      <article><span>In service</span><strong id="kpiService">0</strong></article>
+      <article><span>Completed</span><strong id="kpiCompleted">0</strong></article>
     </section>
+
     <section class="playback glass" aria-label="Playback controls">
-      <button id="playPause" type="button" aria-label="Pause">Ⅱ</button><button id="restart" type="button" aria-label="Restart">↺</button>
+      <button id="playPause" type="button" aria-label="Pause">Ⅱ</button>
+      <button id="restartButton" type="button" aria-label="Restart">↺</button>
       <label><span>Speed</span><select id="speed"><option value="1">1×</option><option value="4">4×</option><option value="12" selected>12×</option><option value="30">30×</option><option value="60">60×</option></select></label>
       <input id="timeline" aria-label="Simulation timeline" type="range" min="0" max="1140" step="0.1" value="0" />
+      <span id="timelineReadout" class="timeline-readout">0.0 / 1140 min</span>
     </section>
-    <aside id="inspector" class="inspector glass" aria-live="polite"><div class="eyebrow">INSPECT</div><h2 id="inspectTitle">Select a patient or resource</h2><div id="inspectBody" class="inspect-body">Click an entity in the 3D scene to inspect its simulated history and current state.</div></aside>
-    <aside class="event-panel glass"><div class="event-head"><div><div class="eyebrow">EVENT TRACE</div><h2>Recent SimPy events</h2></div><button id="toggleEvents" type="button">Hide</button></div><div id="eventLog" class="event-log"></div></aside>
-    <div class="legend glass"><span><i class="dot trauma"></i>Trauma</span><span><i class="dot nontrauma"></i>Non-trauma</span><span><i class="dot idle"></i>Idle resource</span><span><i class="dot busy"></i>Occupied</span></div>
+
+    <aside id="inspector" class="inspector glass" aria-live="polite">
+      <div class="eyebrow">INSPECT</div>
+      <h2>Run the model, then select a patient or resource</h2>
+      <p>Patient journeys, queue waits, service intervals and resource state are derived from STARS/SimPy output.</p>
+      <div id="resourceCards" class="resource-cards"></div>
+    </aside>
+
+    <aside id="eventPanel" class="event-panel glass" hidden>
+      <div class="event-head">
+        <div><div class="eyebrow">EVENT TRACE</div><h2>Recent SimPy events</h2></div>
+        <button id="eventClose" type="button">Close</button>
+      </div>
+      <div id="eventLog" class="event-log"></div>
+    </aside>
+
+    <div class="legend glass">
+      <span><i class="dot trauma"></i>Trauma</span>
+      <span><i class="dot nontrauma"></i>Non-trauma</span>
+      <span><i class="dot idle"></i>Idle resource</span>
+      <span><i class="dot busy"></i>Occupied</span>
+    </div>
   </section>
 </main>
 <script type="module" src="./app.js"></script>
