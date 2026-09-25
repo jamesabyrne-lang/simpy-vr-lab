@@ -1,4 +1,4 @@
-name: Validate STARS model bridge
+name: Validate healthcare SimPy browser prototype
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-stars-${{ github.ref }}
+  group: validate-healthcare-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -20,15 +20,13 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - name: Install pinned model and test dependencies
+      - name: Install model and test dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install 'treat-sim==3.0.0' 'simpy==4.1.1' pytest selenium
-      - name: Run bridge validation
-        run: PYTHONPATH=. pytest -q tests/test_bridge.py tests/test_dom_contract.py
-      - name: Assemble and check browser JavaScript
-        run: |
-          cat src/app-01.jsfrag src/app-02.jsfrag src/app-03.jsfrag src/app-04.jsfrag src/app-05.jsfrag > app.js
-          node --check app.js
+          python -m pip install 'simpy==4.1.1' pytest selenium
+      - name: Run model and DOM tests
+        run: PYTHONPATH=. pytest -q tests/test_healthcare.py tests/test_dom_contract.py
+      - name: Check browser JavaScript
+        run: node --check app.js
       - name: Browser runtime smoke test
         run: python tests/browser_smoke.py
