@@ -25,8 +25,6 @@ jobs:
         uses: actions/checkout@v6
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Assemble browser application
-        run: cat src/app-01.jsfrag src/app-02.jsfrag src/app-03.jsfrag src/app-04.jsfrag src/app-05.jsfrag > app.js
       - name: Upload site
         uses: actions/upload-pages-artifact@v4
         with:
