@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <meta name="theme-color" content="#08121c" />
-  <title>STARS Treatment Centre VR</title>
+  <title>Healthcare Treatment Centre VR</title>
   <link rel="stylesheet" href="./styles.css" />
   <script src="https://cdn.jsdelivr.net/pyodide/v0.29.5/full/pyodide.js"></script>
   <script type="importmap">
@@ -23,7 +23,7 @@
 
     <header class="topbar glass">
       <div class="brand">
-        <div class="eyebrow">STARS · SIMPY · WEBXR</div>
+        <div class="eyebrow">SIMPY · THREE.JS · WEBXR</div>
         <h1>Treatment Centre VR</h1>
         <p id="statusText">Loading Python runtime…</p>
       </div>
@@ -37,12 +37,12 @@
       </div>
     </header>
 
-    <aside class="control-panel glass" aria-label="STARS scenario controls">
+    <aside class="control-panel glass" aria-label="Healthcare scenario controls">
       <div class="panel-title">
-        <div><div class="eyebrow">EXPERIMENT</div><h2>STARS scenario</h2></div>
+        <div><div class="eyebrow">EXPERIMENT</div><h2>Healthcare scenario</h2></div>
         <span id="engineBadge" class="badge">Python loading</span>
       </div>
-      <div class="baseline-note">Controls modify genuine STARS scenario inputs. Reset restores the published baseline.</div>
+      <div class="baseline-note">Controls modify genuine Healthcare scenario inputs. Reset restores the published baseline.</div>
 
       <details open>
         <summary>Demand & pathway</summary>
@@ -73,10 +73,10 @@
         <label><span>Trauma treatment mean</span><input id="traumaTreatMean" type="number" min="1" max="180" step="0.5" value="30" /></label>
       </details>
 
-      <label class="compact"><span>Random seed</span><input id="seed" type="number" min="0" max="2147483647" value="17" /></label>
+      <div class="field-grid two"><label class="compact"><span>Run duration (min)</span><select id="duration"><option value="120">120</option><option value="240">240</option><option value="360" selected>360</option><option value="480">480</option><option value="720">720</option></select></label><label class="compact"><span>Random seed</span><input id="seed" type="number" min="0" max="2147483647" value="17" /></label></div>
       <div class="button-row">
         <button id="baselineButton" type="button" class="secondary">Reset baseline</button>
-        <button id="runButton" type="button" class="primary" disabled>Run STARS simulation</button>
+        <button id="runButton" type="button" class="primary" disabled>Run simulation</button>
       </div>
     </aside>
 
@@ -92,14 +92,14 @@
       <button id="playPause" type="button" aria-label="Pause">Ⅱ</button>
       <button id="restartButton" type="button" aria-label="Restart">↺</button>
       <label><span>Speed</span><select id="speed"><option value="1">1×</option><option value="4">4×</option><option value="12" selected>12×</option><option value="30">30×</option><option value="60">60×</option></select></label>
-      <input id="timeline" aria-label="Simulation timeline" type="range" min="0" max="1140" step="0.1" value="0" />
-      <span id="timelineReadout" class="timeline-readout">0.0 / 1140 min</span>
+      <input id="timeline" aria-label="Simulation timeline" type="range" min="0" max="360" step="0.1" value="0" />
+      <span id="timelineReadout" class="timeline-readout">06:00</span>
     </section>
 
     <aside id="inspector" class="inspector glass" aria-live="polite">
       <div class="eyebrow">INSPECT</div>
       <h2>Run the model, then select a patient or resource</h2>
-      <p>Patient journeys, queue waits, service intervals and resource state are derived from STARS/SimPy output.</p>
+      <p>Patient journeys, queue waits, service intervals and resource state are derived from SimPy output.</p>
     </aside>
 
     <aside class="resource-panel glass" aria-label="Live resource utilisation">
