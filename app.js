@@ -56,8 +56,8 @@ let runGeneration = 0;
 
 // ---------- Three.js scene ----------
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x9fb9c8);
-scene.fog = new THREE.FogExp2(0x9fb9c8, 0.0065);
+scene.background = new THREE.Color(0x89a3b1);
+scene.fog = new THREE.FogExp2(0x89a3b1, 0.0058);
 
 const renderer = new THREE.WebGLRenderer({ canvas: $('sceneCanvas'), antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -66,7 +66,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.18;
+renderer.toneMappingExposure = 1.02;
 renderer.xr.enabled = true;
 renderer.xr.setReferenceSpaceType('local-floor');
 
@@ -98,21 +98,21 @@ const patientsGroup = new THREE.Group();
 scene.add(facility, dynamicResources, patientsGroup);
 
 const materials = {
-  floor: new THREE.MeshStandardMaterial({ color: 0xb9c5c3, roughness: .64, metalness: .03 }),
-  floorWarm: new THREE.MeshStandardMaterial({ color: 0xcdbfaf, roughness: .72, metalness: .01 }),
-  wall: new THREE.MeshStandardMaterial({ color: 0xe7e0d4, roughness: .84, metalness: .01 }),
-  wallAccent: new THREE.MeshStandardMaterial({ color: 0xd6dfd8, roughness: .78, metalness: .02 }),
-  glass: new THREE.MeshPhysicalMaterial({ color: 0xb9e5ee, transparent: true, opacity: .24, roughness: .05, transmission: .46, thickness: .05, side: THREE.DoubleSide }),
-  trim: new THREE.MeshStandardMaterial({ color: 0x48616b, roughness: .30, metalness: .48 }),
-  desk: new THREE.MeshStandardMaterial({ color: 0x47646d, roughness: .42, metalness: .16 }),
-  bed: new THREE.MeshStandardMaterial({ color: 0xf2f5f4, roughness: .68 }),
-  bedding: new THREE.MeshStandardMaterial({ color: 0xbfdfe6, roughness: .82 }),
-  rail: new THREE.MeshStandardMaterial({ color: 0x91a4ab, roughness: .20, metalness: .78 }),
-  dark: new THREE.MeshStandardMaterial({ color: 0x243743, roughness: .55, metalness: .18 }),
-  wood: new THREE.MeshStandardMaterial({ color: 0xa57f5a, roughness: .72, metalness: .02 }),
-  whitePlastic: new THREE.MeshStandardMaterial({ color: 0xf4f6f5, roughness: .46, metalness: .02 }),
-  tealPlastic: new THREE.MeshStandardMaterial({ color: 0x3f7d83, roughness: .50, metalness: .04 }),
-  door: new THREE.MeshStandardMaterial({ color: 0x78949b, roughness: .55, metalness: .06 }),
+  floor: new THREE.MeshStandardMaterial({ color: 0x8fa6a1, roughness: .64, metalness: .03 }),
+  floorWarm: new THREE.MeshStandardMaterial({ color: 0xb89f8a, roughness: .72, metalness: .01 }),
+  wall: new THREE.MeshStandardMaterial({ color: 0xcfe1dc, roughness: .84, metalness: .01 }),
+  wallAccent: new THREE.MeshStandardMaterial({ color: 0xb8d0c8, roughness: .78, metalness: .02 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0x9fd8e3, transparent: true, opacity: .24, roughness: .05, transmission: .46, thickness: .05, side: THREE.DoubleSide }),
+  trim: new THREE.MeshStandardMaterial({ color: 0x35515b, roughness: .30, metalness: .48 }),
+  desk: new THREE.MeshStandardMaterial({ color: 0x3f6972, roughness: .42, metalness: .16 }),
+  bed: new THREE.MeshStandardMaterial({ color: 0xeaf1ef, roughness: .68 }),
+  bedding: new THREE.MeshStandardMaterial({ color: 0x9fc9d2, roughness: .82 }),
+  rail: new THREE.MeshStandardMaterial({ color: 0x6f8e97, roughness: .20, metalness: .78 }),
+  dark: new THREE.MeshStandardMaterial({ color: 0x203640, roughness: .55, metalness: .18 }),
+  wood: new THREE.MeshStandardMaterial({ color: 0x9c7450, roughness: .72, metalness: .02 }),
+  whitePlastic: new THREE.MeshStandardMaterial({ color: 0xe9efed, roughness: .46, metalness: .02 }),
+  tealPlastic: new THREE.MeshStandardMaterial({ color: 0x2f7b7d, roughness: .50, metalness: .04 }),
+  door: new THREE.MeshStandardMaterial({ color: 0x5c8791, roughness: .55, metalness: .06 }),
   black: new THREE.MeshStandardMaterial({ color: 0x121a1f, roughness: .38, metalness: .28 }),
   screen: new THREE.MeshStandardMaterial({ color: 0x153b4b, emissive: 0x2a8196, emissiveIntensity: .75, roughness: .30 }),
 };
@@ -259,15 +259,15 @@ function buildFacility() {
   for(const x of [-25.78,25.78]){meshBox(.12,.16,28.3,materials.trim,x,.08,0);}
 
   // Zone floor insets.
-  floorZone('triage',-14,0,8.2,6.2,0xbfd2d4);
-  floorZone('registration',-5,7.4,8.2,6.1,0xc9d9d1);
-  floorZone('examination',5.5,7.4,11.3,6.1,0xc3d2dd);
-  floorZone('non_trauma_treatment',16,7.4,8.3,6.1,0xcddccf);
-  floorZone('trauma',-2,-7.4,10.3,6.2,0xdcc6be);
-  floorZone('trauma_treatment',13,-7.4,10.3,6.2,0xe1cec4);
+  floorZone('triage',-14,0,8.2,6.2,0x8fbcc3);
+  floorZone('registration',-5,7.4,8.2,6.1,0x9fc7b8);
+  floorZone('examination',5.5,7.4,11.3,6.1,0x9fb8d3);
+  floorZone('non_trauma_treatment',16,7.4,8.3,6.1,0xa9cfbf);
+  floorZone('trauma',-2,-7.4,10.3,6.2,0xd1a190);
+  floorZone('trauma_treatment',13,-7.4,10.3,6.2,0xd8b09a);
 
   // Main corridor edging and pathway bands.
-  const corridorMat=new THREE.MeshStandardMaterial({color:0xc7d0cc,roughness:.70});
+  const corridorMat=new THREE.MeshStandardMaterial({color:0xa7b8b4,roughness:.70});
   meshBox(49,.03,2.5,corridorMat,0,.055,0);
   const pathNT=new THREE.MeshBasicMaterial({color:0x67aeb9,transparent:true,opacity:.72});
   const pathT=new THREE.MeshBasicMaterial({color:0xd78169,transparent:true,opacity:.72});
