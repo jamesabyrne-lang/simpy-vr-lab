@@ -309,7 +309,38 @@ function updateWorldBoard(){const c=currentCounts(simTime);boardCtx.clearRect(0,
 function readConfig(){return{demand_multiplier:Number(UI.demand.value),prob_trauma:Number(UI.probTrauma.value),non_trauma_treat_p:Number(UI.ntTreatP.value),n_triage:Number(UI.nTriage.value),n_reg:Number(UI.nReg.value),n_exam:Number(UI.nExam.value),n_trauma:Number(UI.nTrauma.value),n_cubicles_1:Number(UI.nCubicles1.value),n_cubicles_2:Number(UI.nCubicles2.value),triage_mean:Number(UI.triageMean.value),reg_mean:Number(UI.regMean.value),exam_mean:Number(UI.examMean.value),trauma_mean:Number(UI.traumaMean.value),non_trauma_treat_mean:Number(UI.ntTreatMean.value),trauma_treat_mean:Number(UI.traumaTreatMean.value),duration:BASELINE.duration,seed:Number(UI.seed.value)};}
 function setBaseline(){UI.demand.value=BASELINE.demand_multiplier;UI.probTrauma.value=BASELINE.prob_trauma;UI.ntTreatP.value=BASELINE.non_trauma_treat_p;UI.nTriage.value=BASELINE.n_triage;UI.nReg.value=BASELINE.n_reg;UI.nExam.value=BASELINE.n_exam;UI.nTrauma.value=BASELINE.n_trauma;UI.nCubicles1.value=BASELINE.n_cubicles_1;UI.nCubicles2.value=BASELINE.n_cubicles_2;UI.triageMean.value=BASELINE.triage_mean;UI.regMean.value=BASELINE.reg_mean;UI.examMean.value=BASELINE.exam_mean;UI.traumaMean.value=BASELINE.trauma_mean;UI.ntTreatMean.value=BASELINE.non_trauma_treat_mean;UI.traumaTreatMean.value=BASELINE.trauma_treat_mean;UI.seed.value=BASELINE.seed;updateReadouts();}
 function updateReadouts(){$('demandReadout').textContent=Number(UI.demand.value).toFixed(2)+'×';$('traumaProbReadout').textContent=Math.round(Number(UI.probTrauma.value)*100)+'%';$('treatProbReadout').textContent=Math.round(Number(UI.ntTreatP.value)*100)+'%';}
-async function initialisePython(){try{UI.status.textContent='Loading CPython, NumPy, pandas and SciPy…';pyodide=await window.loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.29.5/full/'});await pyodide.loadPackage(['micropip','numpy','pandas','scipy']);UI.status.textContent='Installing STARS browser dependencies…';await pyodide.runPythonAsync("import micropip, importlib.util, pathlib\nawait micropip.install('plotly>=6,<7')\nawait micropip.install('simpy==4.1.1', deps=False)\nawait micropip.install('sim-tools==1.3.0', deps=False)\nawait micropip.install('treat-sim==3.0.0', deps=False)\nspec = importlib.util.find_spec('sim_tools')\ninit_path = pathlib.Path(list(spec.submodule_search_locations)[0]) / '__init__.py'\ninit_path.write_text('\\"\\"\\"Browser shim: avoid eager plotting-module imports.\\"\\"\\"\\n__version__ = \\"1.3.0\\"\\n__all__ = [\\"distributions\\"]\\n')");const bridge=await fetch('./stars_bridge.py').then(r=>{if(!r.ok)throw new Error('Could not load stars_bridge.py');return r.text();});await pyodide.runPythonAsync(bridge);UI.badge.textContent='STARS ready';UI.badge.classList.add('ready');UI.run.disabled=false;UI.status.textContent='STARS treatment-centre model ready · published treat-sim 3.0.0';await runSimulation();}catch(err){console.error(err);UI.badge.textContent='Load failed';UI.status.textContent='Model runtime failed: '+err.message;}}
+async function initialisePython(){
+  try{
+    UI.status.textContent='Loading CPython, NumPy, pandas and SciPy…';
+    pyodide=await window.loadPyodide({indexURL:'https://cdn.jsdelivr.net/pyodide/v0.29.5/full/'});
+    await pyodide.loadPackage(['micropip','numpy','pandas','scipy']);
+    UI.status.textContent='Installing STARS browser dependencies…';
+    const pySetup=`import micropip, importlib.util, pathlib
+await micropip.install('plotly>=6,<7')
+await micropip.install('simpy==4.1.1', deps=False)
+await micropip.install('sim-tools==1.3.0', deps=False)
+await micropip.install('treat-sim==3.0.0', deps=False)
+spec = importlib.util.find_spec('sim_tools')
+init_path = pathlib.Path(list(spec.submodule_search_locations)[0]) / '__init__.py'
+init_path.write_text("""Browser shim: avoid eager plotting-module imports.
+__version__ = "1.3.0"
+__all__ = ["distributions"]
+""")
+`;
+    await pyodide.runPythonAsync(pySetup);
+    const bridge=await fetch('./stars_bridge.py').then(r=>{if(!r.ok)throw new Error('Could not load stars_bridge.py');return r.text();});
+    await pyodide.runPythonAsync(bridge);
+    UI.badge.textContent='STARS ready';
+    UI.badge.classList.add('ready');
+    UI.run.disabled=false;
+    UI.status.textContent='STARS treatment-centre model ready · published treat-sim 3.0.0';
+    await runSimulation();
+  }catch(err){
+    console.error(err);
+    UI.badge.textContent='Load failed';
+    UI.status.textContent='Model runtime failed: '+err.message;
+  }
+}
 async function runSimulation(){if(!pyodide)return;const generation=++runGeneration;UI.run.disabled=true;UI.run.textContent='Running STARS model…';UI.status.textContent='Executing the SimPy treatment-centre model…';try{pyodide.globals.set('vr_config_json',JSON.stringify(readConfig()));const raw=await pyodide.runPythonAsync('run_stars_vr(vr_config_json)');if(generation!==runGeneration)return;modelData=JSON.parse(raw);UI.timeline.max=String(modelData.config.duration);rebuildResources(modelData.resource_capacities);rebuildPatients();selected=null;resetPlayback();const m=modelData.extra_metrics;UI.status.textContent=`${modelData.metrics['00_arrivals']} arrivals · ${m.completed} completed · max queue ${modelData.max_queue.overall} · seed ${modelData.config.seed}`;renderSummaryInspector();}catch(err){console.error(err);UI.status.textContent='Simulation failed: '+err.message;}finally{UI.run.disabled=false;UI.run.textContent='Run STARS simulation';}}
 function resetPlayback(){simTime=0;playing=true;UI.playPause.textContent='Ⅱ';lastFrame=performance.now();for(const a of patientAgents){a.userData.initialised=false;a.visible=false;}updateVisuals(.016);updateUi();updateWorldBoard();}
 
