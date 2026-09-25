@@ -1,110 +1,74 @@
-# STARS Treatment Centre VR Lab
+# Healthcare Treatment Centre VR Lab
 
-A browser-based 3D and WebXR visualisation of the **STARS treatment-centre SimPy model**. The published Python DES remains the source of truth: Three.js visualises its patient records and event timings rather than reproducing the model logic in JavaScript.
+A browser-based healthcare discrete-event simulation built with **SimPy**, **Pyodide**, **Three.js** and **WebXR**.
+
+The project is inspired by the broad treatment-centre pathways used in the STARS healthcare simulation examples, but this prototype deliberately uses a smaller self-contained SimPy model so it can run reliably in a browser without the full STARS dependency stack.
 
 ## Live application
 
-GitHub Pages: <https://jamesabyrne-lang.github.io/simpy-vr-lab/>
+<https://jamesabyrne-lang.github.io/simpy-vr-lab/>
 
-## Underlying model
+## Model
 
-This project uses the published `treat-sim==3.0.0` package from the STARS healthcare work:
+Patients arrive stochastically and all pass through triage.
 
-- upstream repository: `pythonhealthdatascience/stars-treat-sim`
-- release: `v3.0.0`
-- source commit: `e4a8c548d9ff7b36baa4fa117c492b66adcd78fa`
-- licence: MIT
-
-The model represents a treatment centre with a common triage step and two patient pathways:
+**Trauma pathway**
 
 ```text
-                           ┌─ Trauma stabilisation ─ Trauma treatment ─┐
-Arrival ─ Triage ──────────┤                                           ├─ Discharge
-                           └─ Registration ─ Examination ─ optional treatment ┘
+Arrival → Triage → Trauma stabilisation → Trauma treatment → Discharge
 ```
 
-The current published STARS Streamlit application also depends on `treat-sim==3.0.0`.
+**Non-trauma pathway**
+
+```text
+Arrival → Triage → Registration → Examination → optional treatment → Discharge
+```
+
+SimPy determines arrivals, queues, resource acquisition, service durations, branching and departures. Three.js only visualises the resulting event trace.
 
 ## Architecture
 
 ```text
-STARS treat-sim 3.0.0
-        ↓
-SimPy running in CPython/Pyodide
-        ↓
-patient records and STARS KPIs
-        ↓
-stars_bridge.py event trace
-        ↓
-visual-state engine
-        ↓
-Three.js
-        ↓
+SimPy model
+   ↓
+Pyodide / browser Python
+   ↓
+JSON event trace
+   ↓
+Three.js visual state engine
+   ↓
 Desktop 3D / WebXR
 ```
 
-`stars_bridge.py` imports and executes the published package. It reconstructs absolute queue/service timestamps from the records produced by `TreatmentCentreModel` and emits an explicit event trace. The 3D layer never determines when service begins or ends.
-
 ## Features
 
-- genuine STARS/SimPy treatment-centre logic executed in the browser;
-- baseline Nelson time-varying arrival profile;
-- trauma and non-trauma patient pathways;
-- all six constrained resource types represented spatially;
-- configurable demand, pathway probabilities and resource capacities;
-- selected service-time assumptions exposed for experimentation;
-- exact reset to the published STARS baseline;
-- patient figures forming queues and occupying resources according to SimPy timings;
-- live simulation clock, WIP, queue, service and completion counts;
-- per-resource occupancy and cumulative utilisation displays;
-- selectable patients with full queue/service timeline;
-- selectable resources with occupancy and queue state;
-- recent SimPy event log;
-- pause, replay, speed control and timeline scrubbing without rerunning the model;
-- desktop orbit/zoom viewpoints;
-- WebXR `Enter VR` support on compatible headset browsers;
-- an in-world status board designed to remain visible in VR.
-
-## STARS baseline
-
-The interface resets to the package defaults:
-
-| Parameter | Baseline |
-|---|---:|
-| Triage bays | 1 |
-| Registration clerks | 1 |
-| Examination rooms | 3 |
-| Trauma bays | 2 |
-| Non-trauma treatment cubicles | 1 |
-| Trauma treatment cubicles | 1 |
-| Mean triage duration | 3 min |
-| Mean registration duration | 5 min |
-| Mean examination duration | 16 min |
-| Mean trauma stabilisation duration | 90 min |
-| Mean non-trauma treatment | 13.3 min |
-| Mean trauma treatment | 30 min |
-| Probability trauma | 0.12 |
-| Probability non-trauma treatment | 0.60 |
-| Results collection period | 1,140 min |
-
-The model retains the upstream distributional assumptions; the UI does not replace them with deterministic durations.
+- real SimPy resource queues and patient processes;
+- configurable demand, trauma probability and optional-treatment probability;
+- configurable triage, registration, examination, trauma and treatment capacities;
+- configurable mean service times, seed and run duration;
+- low-poly patient figures;
+- spatial triage, registration, examination, trauma, treatment and discharge areas;
+- live queues, occupied resources and patient movement;
+- simulation clock, WIP, waiting, service and completion KPIs;
+- resource utilisation cards;
+- selectable patients and resources;
+- event-trace panel;
+- pause/play, speed controls and timeline scrubbing;
+- desktop orbit/zoom and preset viewpoints;
+- WebXR `Enter VR` support on compatible browsers/headsets.
 
 ## Browser execution
 
-The page loads Pyodide, then loads the scientific packages required by the model and installs the pure-Python packages used by STARS. No local Python installation is required.
+The page loads Pyodide and installs only `simpy==4.1.1`. No local Python installation or server-side backend is required.
 
-First load can take noticeably longer because the Python/WebAssembly runtime and packages must be downloaded.
+## Important simplification
 
-## VR
+This is **STARS-inspired**, not an exact reproduction of `treat-sim`. It keeps the broad trauma/non-trauma structure and baseline-style parameters, but replaces the heavier scientific-package dependency chain with a compact educational SimPy model intended for visualisation and experimentation.
 
-Open the GitHub Pages URL in a WebXR-capable headset browser. When `immersive-vr` is available, an **Enter VR** control is shown. The initial VR implementation is observational: users can stand within the facility and watch the same event-driven model that is available on desktop.
+## Development
 
-## Validation
+`simulation.py` contains the DES.
 
-A GitHub Actions validation workflow installs `treat-sim==3.0.0`, executes fixed-seed scenarios through `stars_bridge.py`, and checks event/model consistency, pathway forcing and resource-unit non-overlap. The browser build workflow remains separate from these tests.
+`app.js` contains the Three.js/WebXR visualisation and Pyodide bridge.
 
-## Provenance and limitations
-
-See [STARS_PROVENANCE.md](STARS_PROVENANCE.md) for the exact source/version mapping, adaptations and limitations, and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for attribution.
-
-This project is an independent educational visualisation and is **not an official STARS product**.
+The GitHub Actions validation workflow runs fixed-seed model tests, JavaScript syntax checks, DOM checks and a headless-browser smoke test.
