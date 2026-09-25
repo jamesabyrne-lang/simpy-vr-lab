@@ -4,30 +4,74 @@ from collections import defaultdict
 import pytest
 
 from stars_bridge import run_stars_vr
-from treat_sim.model import Scenario, TreatmentCentreModel, SimulationSummary
+from treat_sim.model import Scenario, TreatmentCentreModel, SimulationSummary, RESULT_FIELDS
 
 
-def run_bridge(**kwargs):
-    config = {"seed": 42, "duration": 300}
+def run_bridge(seed=42, duration=300, **kwargs):
+    config = {"seed": seed, "duration": duration}
     config.update(kwargs)
     return json.loads(run_stars_vr(json.dumps(config)))
 
 
-def test_baseline_bridge_matches_upstream_summary():
-    data = run_bridge()
-
-    # Independent direct use of the published STARS classes for the same seed/run.
-    scenario = Scenario(random_number_set=42)
+def run_upstream(seed=42, duration=300, **scenario_kwargs):
+    scenario = Scenario(random_number_set=seed, **scenario_kwargs)
     model = TreatmentCentreModel(scenario)
-    model.run(results_collection_period=300)
+    model.run(results_collection_period=duration)
     summary = SimulationSummary(model)
     summary.process_run_results()
+    return model, summary
 
-    assert data["metrics"]["00_arrivals"] == summary.results["00_arrivals"]
-    assert data["metrics"]["09_throughput"] == summary.results["09_throughput"]
-    assert data["metrics"]["01a_triage_wait"] == pytest.approx(summary.results["01a_triage_wait"])
+
+@pytest.mark.parametrize("seed", [1, 42, 754])
+def test_fixed_seed_bridge_matches_complete_upstream_summary(seed):
+    data = run_bridge(seed=seed)
+    _, summary = run_upstream(seed=seed)
+    for key in RESULT_FIELDS:
+        expected = summary.results[key]
+        actual = data["metrics"][key]
+        if expected != expected:  # NaN
+            assert actual is None
+        else:
+            assert actual == pytest.approx(expected, rel=1e-11, abs=1e-11), key
     assert len(data["patients"]) == summary.results["00_arrivals"]
     assert data["extra_metrics"]["completed"] == summary.results["09_throughput"]
+
+
+def test_patient_paths_waits_service_times_and_departures_match_upstream():
+    duration = 420
+    seed = 42
+    data = run_bridge(seed=seed, duration=duration)
+    model, _ = run_upstream(seed=seed, duration=duration)
+
+    direct = {}
+    for p in model.trauma_patients:
+        direct[p.identifier] = ("trauma", p)
+    for p in model.non_trauma_patients:
+        direct[p.identifier] = ("non_trauma", p)
+
+    stage_attrs = {
+        "triage": ("wait_triage", "triage_duration"),
+        "registration": ("wait_reg", "reg_duration"),
+        "examination": ("wait_exam", "exam_duration"),
+        "trauma": ("wait_trauma", "trauma_duration"),
+        "non_trauma_treatment": ("wait_treat", "treat_duration"),
+        "trauma_treatment": ("wait_treat", "treat_duration"),
+    }
+
+    assert {p["id"] for p in data["patients"]} == set(direct)
+    for record in data["patients"]:
+        pathway, upstream_patient = direct[record["id"]]
+        assert record["pathway"] == pathway
+        assert record["arrival"] == pytest.approx(upstream_patient.arrival)
+        for stage in record["stages"]:
+            wait_attr, duration_attr = stage_attrs[stage["stage"]]
+            assert stage["wait"] == pytest.approx(getattr(upstream_patient, wait_attr))
+            assert stage["service_duration"] == pytest.approx(getattr(upstream_patient, duration_attr))
+            assert stage["service_start"] == pytest.approx(stage["queue_enter"] + stage["wait"])
+            assert stage["service_end"] == pytest.approx(stage["service_start"] + stage["service_duration"])
+        if record["departure"] is not None:
+            assert record["total_time"] == pytest.approx(upstream_patient.total_time)
+            assert record["departure"] == pytest.approx(record["arrival"] + upstream_patient.total_time)
 
 
 def test_visual_trace_never_precedes_simpy_times():
@@ -46,12 +90,13 @@ def test_visual_trace_never_precedes_simpy_times():
             assert patient["departure"] >= last_end - 1e-8
 
 
-def test_visual_resource_ids_do_not_overlap():
+def test_visual_resource_ids_do_not_overlap_and_respect_capacity():
     data = run_bridge()
     intervals = defaultdict(list)
     for patient in data["patients"]:
         for stage in patient["stages"]:
             if stage["resource_id"] is not None and stage["service_start"] is not None:
+                assert 1 <= stage["resource_id"] <= data["resource_capacities"][stage["stage"]]
                 end = stage["service_end"] if stage["service_end"] is not None else data["config"]["duration"]
                 intervals[(stage["stage"], stage["resource_id"])].append((stage["service_start"], end))
 
