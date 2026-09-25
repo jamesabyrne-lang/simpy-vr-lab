@@ -1,4 +1,5 @@
 import json
+import math
 from collections import defaultdict
 
 import pytest
@@ -65,10 +66,18 @@ def test_patient_paths_waits_service_times_and_departures_match_upstream():
         assert record["arrival"] == pytest.approx(upstream_patient.arrival)
         for stage in record["stages"]:
             wait_attr, duration_attr = stage_attrs[stage["stage"]]
-            assert stage["wait"] == pytest.approx(getattr(upstream_patient, wait_attr))
-            assert stage["service_duration"] == pytest.approx(getattr(upstream_patient, duration_attr))
-            assert stage["service_start"] == pytest.approx(stage["queue_enter"] + stage["wait"])
-            assert stage["service_end"] == pytest.approx(stage["service_start"] + stage["service_duration"])
+            upstream_wait = getattr(upstream_patient, wait_attr)
+            upstream_duration = getattr(upstream_patient, duration_attr)
+            if stage["service_start"] is None:
+                assert not math.isfinite(float(upstream_wait))
+                assert stage["wait"] is None
+                assert stage["service_duration"] is None
+                assert stage["service_end"] is None
+            else:
+                assert stage["wait"] == pytest.approx(upstream_wait)
+                assert stage["service_duration"] == pytest.approx(upstream_duration)
+                assert stage["service_start"] == pytest.approx(stage["queue_enter"] + stage["wait"])
+                assert stage["service_end"] == pytest.approx(stage["service_start"] + stage["service_duration"])
         if record["departure"] is not None:
             assert record["total_time"] == pytest.approx(upstream_patient.total_time)
             assert record["departure"] == pytest.approx(record["arrival"] + upstream_patient.total_time)
