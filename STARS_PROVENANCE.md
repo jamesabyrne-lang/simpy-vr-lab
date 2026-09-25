@@ -109,6 +109,10 @@ The browser currently loads:
 
 NumPy, pandas and SciPy are loaded from the Pyodide distribution before the pure-Python STARS packages are installed.
 
+### Browser-only sim-tools import shim
+
+`sim-tools==1.3.0` eagerly imports plotting and time-dependent-analysis modules from its package initializer, even though `treat-sim` uses only `sim_tools.distributions` for this model. In the browser environment only, the installed `sim_tools/__init__.py` is replaced with a minimal initializer that exposes the package version and avoids those unused eager imports. The upstream `sim_tools.distributions` module itself is **not modified**. Plotly is still installed because that distributions module imports Plotly directly. This shim changes dependency loading only; it does not change random-number streams, distribution parameters, samples, SimPy resources, pathway logic or event timings.
+
 ## Attribution
 
 `treat-sim` is authored by Thomas Monks, Alison Harper and Amy Heather and is released under the MIT licence. The STARS materials request citation of the project and the associated work on reusable healthcare simulations.
