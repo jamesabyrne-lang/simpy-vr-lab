@@ -1,0 +1,70 @@
+}
+function queuePosition(stage, idx) {
+  const b=queueBase(stage), row=Math.floor(idx/6), col=idx%6, dir=row%2===0?1:-1;
+  if(stage==='triage') return new THREE.Vector3(b.x-row*1.05,0,b.z+(col-2.5)*.72*dir);
+  return new THREE.Vector3(b.x+(col-2.5)*.72*dir,0,b.z+(stage==='trauma'||stage==='trauma_treatment'?-1:1)*row*.85);
+}
+function makeResourceUnit(stage, idx, count) {
+  const g=new THREE.Group(); const color=ZONE_COLOURS[stage]||0x56d7ff;
+  const shellMat=new THREE.MeshStandardMaterial({color:stage.includes('trauma')?0x5d4a43:0x324d5a,roughness:.44,metalness:.18});
+  if(stage==='triage'||stage==='registration') {
+    const desk=new THREE.Mesh(new THREE.BoxGeometry(1.6,.9,1.05),shellMat);desk.position.y=.45;g.add(desk);
+    const screen=new THREE.Mesh(new THREE.BoxGeometry(.55,.48,.08),materials.dark);screen.position.set(0,.98,-.15);g.add(screen);
+  } else if(stage==='examination') {
+    const couch=new THREE.Mesh(new THREE.BoxGeometry(1.9,.55,.8),materials.bed);couch.position.y=.48;g.add(couch);
+    const stand=new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,1.5,10),materials.rail);stand.position.set(.8,1.1,.55);g.add(stand);
+  } else {
+    const bed=new THREE.Mesh(new THREE.BoxGeometry(2.0,.58,.86),materials.bed);bed.position.y=.48;g.add(bed);
+    const head=new THREE.Mesh(new THREE.BoxGeometry(.12,.8,.9),materials.rail);head.position.set(-1, .8,0);g.add(head);
+  }
+  const beaconMat=new THREE.MeshStandardMaterial({color:0x68e8c0,emissive:0x174638,emissiveIntensity:1.8});
+  const beacon=new THREE.Mesh(new THREE.SphereGeometry(.12,12,8),beaconMat);beacon.position.set(0,1.72,.0);g.add(beacon);
+  const label=makeTextSprite(`${RESOURCE_LABELS[stage]} ${idx+1}`,{scaleX:2.6,scaleY:.53,fontSize:44,stroke:'rgba(255,255,255,.18)'});label.position.set(0,2.25,0);g.add(label);
+  const p=resourcePosition(stage,idx,count);g.position.copy(p);g.userData={kind:'resource',stage,index:idx+1,beacon};
+  g.traverse(o=>{if(o.isMesh){o.userData.pickRoot=g;clickable.push(o);o.castShadow=true;}});
+  dynamicResources.add(g);return g;
+}
+function rebuildResources(capacities) {
+  while(dynamicResources.children.length) dynamicResources.remove(dynamicResources.children[0]);
+  clickable=clickable.filter(o=>o.userData?.pickRoot?.userData?.kind!=='resource');
+  resourceUnits=new Map();
+  for(const stage of STAGE_ORDER){const count=capacities?.[stage]||BASELINE[{triage:'n_triage',registration:'n_reg',examination:'n_exam',trauma:'n_trauma',non_trauma_treatment:'n_cubicles_1',trauma_treatment:'n_cubicles_2'}[stage]];const arr=[];for(let i=0;i<count;i++)arr.push(makeResourceUnit(stage,i,count));resourceUnits.set(stage,arr);}
+}
+rebuildResources({triage:1,registration:1,examination:3,trauma:2,non_trauma_treatment:1,trauma_treatment:1});
+
+// ---------- Patient figures ----------
+function makePatientFigure(patient) {
+  const group=new THREE.Group();
+  const pathColor=patient.pathway==='trauma'?0xff8d6d:0x66d6e8;
+  const skinPalette=[0xf0c7a8,0xc98e68,0x8c5a3e,0xe2ad82];
+  const skin=skinPalette[patient.id%skinPalette.length];
+  const cloth=new THREE.MeshStandardMaterial({color:pathColor,roughness:.72});
+  const skinMat=new THREE.MeshStandardMaterial({color:skin,roughness:.82});
+  const trouser=new THREE.MeshStandardMaterial({color:0x263746,roughness:.8});
+  const torso=new THREE.Mesh(new THREE.CylinderGeometry(.22,.31,.78,8),cloth);torso.position.y=1.12;group.add(torso);
+  const head=new THREE.Mesh(new THREE.IcosahedronGeometry(.22,2),skinMat);head.position.y=1.72;group.add(head);
+  const limbGeo=new THREE.CylinderGeometry(.055,.065,.65,7);
+  for(const side of [-1,1]){
+    const arm=new THREE.Mesh(limbGeo,skinMat);arm.position.set(.30*side,1.08,0);arm.rotation.z=.10*side;group.add(arm);
+    const leg=new THREE.Mesh(limbGeo,trouser);leg.position.set(.13*side,.43,0);group.add(leg);
+  }
+  const badge=new THREE.Mesh(new THREE.CircleGeometry(.09,16),new THREE.MeshBasicMaterial({color:0xffffff}));badge.position.set(0,1.22,.27);group.add(badge);
+  group.scale.setScalar(.92); group.visible=false; group.userData={kind:'patient',patient,initialised:false};
+  group.traverse(o=>{if(o.isMesh){o.userData.pickRoot=group;clickable.push(o);o.castShadow=true;}});
+  patientsGroup.add(group);return group;
+}
+function rebuildPatients(){while(patientsGroup.children.length)patientsGroup.remove(patientsGroup.children[0]);clickable=clickable.filter(o=>o.userData?.pickRoot?.userData?.kind!=='patient');patientAgents=[];if(!modelData)return;for(const p of modelData.patients)patientAgents.push(makePatientFigure(p));}
+
+// ---------- Model state → visual state ----------
+function stageState(stage,t){
+  if(stage.queue_enter==null||t<stage.queue_enter)return null;
+  if(stage.service_start==null||t<stage.service_start)return {kind:'queue',stage:stage.stage};
+  if(stage.service_end==null||t<stage.service_end)return {kind:'service',stage:stage.stage,resource:stage.resource_id};
+  return {kind:'done',stage:stage.stage};
+}
+function patientState(patient,t,queueMaps){
+  if(t<patient.arrival)return null;
+  if(patient.departure!=null&&t>=patient.departure)return {kind:'departed',target:ZONES.exit};
+  for(const stage of patient.stages){const s=stageState(stage,t);if(!s||s.kind==='done')continue;if(s.kind==='queue'){const idx=queueMaps.get(stage.stage)?.get(patient.id)||0;return {...s,target:queuePosition(stage.stage,idx)};}if(s.kind==='service'){const units=resourceUnits.get(stage.stage)||[];const unit=units[Math.max(0,(stage.resource_id||1)-1)];return {...s,target:unit?unit.position.clone():ZONES[stage.stage].clone()};}}
+  if(patient.stages.length){const last=patient.stages[patient.stages.length-1];if(last.service_end!=null&&t>=last.service_end)return {kind:'leaving',target:ZONES.exit};}
+  return {kind:'arriving',target:ZONES.entrance};
