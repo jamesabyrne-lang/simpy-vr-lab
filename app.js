@@ -56,8 +56,8 @@ let runGeneration = 0;
 
 // ---------- Three.js scene ----------
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x89a3b1);
-scene.fog = new THREE.FogExp2(0x89a3b1, 0.0058);
+scene.background = new THREE.Color(0x6f8794);
+scene.fog = new THREE.FogExp2(0x6f8794, 0.0048);
 
 const renderer = new THREE.WebGLRenderer({ canvas: $('sceneCanvas'), antialias: true, powerPreference: 'high-performance' });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -66,7 +66,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.02;
+renderer.toneMappingExposure = 0.84;
 renderer.xr.enabled = true;
 renderer.xr.setReferenceSpaceType('local-floor');
 
@@ -80,14 +80,14 @@ controls.maxDistance = 70;
 controls.maxPolarAngle = Math.PI * 0.49;
 controls.screenSpacePanning = false;
 
-scene.add(new THREE.HemisphereLight(0xe9f6ff, 0x64717c, 2.8));
-const ambientFill = new THREE.AmbientLight(0xddeaf1, .75); scene.add(ambientFill);
-const sun = new THREE.DirectionalLight(0xfff5e8, 4.0);
+scene.add(new THREE.HemisphereLight(0xcfe5ef, 0x4d6168, 1.85));
+const ambientFill = new THREE.AmbientLight(0xbfd0d7, .38); scene.add(ambientFill);
+const sun = new THREE.DirectionalLight(0xf8f3ea, 2.6);
 sun.position.set(-12, 24, 14); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
 sun.shadow.camera.left = -35; sun.shadow.camera.right = 35; sun.shadow.camera.top = 25; sun.shadow.camera.bottom = -25;
 scene.add(sun);
-const warm = new THREE.PointLight(0xffdfb3, 16, 24, 2); warm.position.set(10, 4.2, -6); scene.add(warm);
-const cool = new THREE.PointLight(0xbbe9ff, 18, 28, 2); cool.position.set(-12, 4.0, 6); scene.add(cool);
+const warm = new THREE.PointLight(0xf6d2a6, 8, 18, 2); warm.position.set(10, 4.2, -6); scene.add(warm);
+const cool = new THREE.PointLight(0x9fd7ef, 9, 20, 2); cool.position.set(-12, 4.0, 6); scene.add(cool);
 for (const [x,z,color] of [[-16,6,0xe7f7ff],[-4,7,0xf8fbff],[8,7,0xf8fbff],[-4,-7,0xffefe7],[11,-7,0xffeee5],[19,6,0xf4fbff]]) {
   const l=new THREE.PointLight(color,7,10,2); l.position.set(x,4.1,z); scene.add(l);
 }
@@ -98,23 +98,23 @@ const patientsGroup = new THREE.Group();
 scene.add(facility, dynamicResources, patientsGroup);
 
 const materials = {
-  floor: new THREE.MeshStandardMaterial({ color: 0x8fa6a1, roughness: .64, metalness: .03 }),
-  floorWarm: new THREE.MeshStandardMaterial({ color: 0xb89f8a, roughness: .72, metalness: .01 }),
-  wall: new THREE.MeshStandardMaterial({ color: 0xcfe1dc, roughness: .84, metalness: .01 }),
-  wallAccent: new THREE.MeshStandardMaterial({ color: 0xb8d0c8, roughness: .78, metalness: .02 }),
-  glass: new THREE.MeshPhysicalMaterial({ color: 0x9fd8e3, transparent: true, opacity: .24, roughness: .05, transmission: .46, thickness: .05, side: THREE.DoubleSide }),
-  trim: new THREE.MeshStandardMaterial({ color: 0x35515b, roughness: .30, metalness: .48 }),
-  desk: new THREE.MeshStandardMaterial({ color: 0x3f6972, roughness: .42, metalness: .16 }),
-  bed: new THREE.MeshStandardMaterial({ color: 0xeaf1ef, roughness: .68 }),
-  bedding: new THREE.MeshStandardMaterial({ color: 0x9fc9d2, roughness: .82 }),
-  rail: new THREE.MeshStandardMaterial({ color: 0x6f8e97, roughness: .20, metalness: .78 }),
-  dark: new THREE.MeshStandardMaterial({ color: 0x203640, roughness: .55, metalness: .18 }),
-  wood: new THREE.MeshStandardMaterial({ color: 0x9c7450, roughness: .72, metalness: .02 }),
-  whitePlastic: new THREE.MeshStandardMaterial({ color: 0xe9efed, roughness: .46, metalness: .02 }),
-  tealPlastic: new THREE.MeshStandardMaterial({ color: 0x2f7b7d, roughness: .50, metalness: .04 }),
-  door: new THREE.MeshStandardMaterial({ color: 0x5c8791, roughness: .55, metalness: .06 }),
+  floor: new THREE.MeshStandardMaterial({ color: 0x6f8b87, roughness: .66, metalness: .03 }),
+  floorWarm: new THREE.MeshStandardMaterial({ color: 0xa98570, roughness: .74, metalness: .01 }),
+  wall: new THREE.MeshStandardMaterial({ color: 0xb7d0c8, roughness: .86, metalness: .01 }),
+  wallAccent: new THREE.MeshStandardMaterial({ color: 0x8fb4a8, roughness: .80, metalness: .02 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0x87c9d8, transparent: true, opacity: .26, roughness: .05, transmission: .42, thickness: .05, side: THREE.DoubleSide }),
+  trim: new THREE.MeshStandardMaterial({ color: 0x29434b, roughness: .32, metalness: .48 }),
+  desk: new THREE.MeshStandardMaterial({ color: 0x315d66, roughness: .44, metalness: .16 }),
+  bed: new THREE.MeshStandardMaterial({ color: 0xe2ece8, roughness: .70 }),
+  bedding: new THREE.MeshStandardMaterial({ color: 0x7fb3c1, roughness: .82 }),
+  rail: new THREE.MeshStandardMaterial({ color: 0x56747d, roughness: .22, metalness: .78 }),
+  dark: new THREE.MeshStandardMaterial({ color: 0x1a2e36, roughness: .58, metalness: .18 }),
+  wood: new THREE.MeshStandardMaterial({ color: 0x8f6647, roughness: .74, metalness: .02 }),
+  whitePlastic: new THREE.MeshStandardMaterial({ color: 0xdde8e4, roughness: .48, metalness: .02 }),
+  tealPlastic: new THREE.MeshStandardMaterial({ color: 0x1f6f73, roughness: .52, metalness: .04 }),
+  door: new THREE.MeshStandardMaterial({ color: 0x467685, roughness: .56, metalness: .06 }),
   black: new THREE.MeshStandardMaterial({ color: 0x121a1f, roughness: .38, metalness: .28 }),
-  screen: new THREE.MeshStandardMaterial({ color: 0x153b4b, emissive: 0x2a8196, emissiveIntensity: .75, roughness: .30 }),
+  screen: new THREE.MeshStandardMaterial({ color: 0x102f3a, emissive: 0x2f8ea5, emissiveIntensity: .92, roughness: .30 }),
 };
 
 const sharedGeo = {
@@ -128,7 +128,7 @@ function meshBox(w,h,d,material,x,y,z,parent=facility) {
   m.position.set(x,y,z); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
 }
 function floorZone(name, x, z, w, d, color) {
-  const mat = new THREE.MeshStandardMaterial({ color, roughness: .62, metalness: .02, emissive: color, emissiveIntensity: .018 });
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: .58, metalness: .02, emissive: color, emissiveIntensity: .055 });
   const m = meshBox(w,.045,d,mat,x,.035,z);
   m.userData.zone = name; return m;
 }
@@ -259,15 +259,15 @@ function buildFacility() {
   for(const x of [-25.78,25.78]){meshBox(.12,.16,28.3,materials.trim,x,.08,0);}
 
   // Zone floor insets.
-  floorZone('triage',-14,0,8.2,6.2,0x8fbcc3);
-  floorZone('registration',-5,7.4,8.2,6.1,0x9fc7b8);
-  floorZone('examination',5.5,7.4,11.3,6.1,0x9fb8d3);
-  floorZone('non_trauma_treatment',16,7.4,8.3,6.1,0xa9cfbf);
-  floorZone('trauma',-2,-7.4,10.3,6.2,0xd1a190);
-  floorZone('trauma_treatment',13,-7.4,10.3,6.2,0xd8b09a);
+  floorZone('triage',-14,0,8.2,6.2,0x5f9fb0);
+  floorZone('registration',-5,7.4,8.2,6.1,0x72a68f);
+  floorZone('examination',5.5,7.4,11.3,6.1,0x6f92b8);
+  floorZone('non_trauma_treatment',16,7.4,8.3,6.1,0x78b49b);
+  floorZone('trauma',-2,-7.4,10.3,6.2,0xc47d67);
+  floorZone('trauma_treatment',13,-7.4,10.3,6.2,0xd19a73);
 
   // Main corridor edging and pathway bands.
-  const corridorMat=new THREE.MeshStandardMaterial({color:0xa7b8b4,roughness:.70});
+  const corridorMat=new THREE.MeshStandardMaterial({color:0x7f9994,roughness:.70});
   meshBox(49,.03,2.5,corridorMat,0,.055,0);
   const pathNT=new THREE.MeshBasicMaterial({color:0x67aeb9,transparent:true,opacity:.72});
   const pathT=new THREE.MeshBasicMaterial({color:0xd78169,transparent:true,opacity:.72});
