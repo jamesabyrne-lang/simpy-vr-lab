@@ -450,7 +450,7 @@ function makePatientFigure(patient) {
   const torsoShape=pseudo(id,7);
   let torso;
   if(torsoShape<.34) torso=new THREE.Mesh(new THREE.CylinderGeometry(.22*build,.31*build,.76,10),cloth);
-  else if(torsoShape<.68) torso=new THREE.Mesh(new THREE.CapsuleGeometry(.25*build,.42,5,9),cloth);
+  else if(torsoShape<.68){torso=new THREE.Mesh(new THREE.CylinderGeometry(.24*build,.29*build,.70,10),cloth);torso.scale.y=1.03;}
   else torso=new THREE.Mesh(new THREE.BoxGeometry(.48*build,.72,.30*build),cloth);
   torso.position.y=1.14;group.add(torso);
 
