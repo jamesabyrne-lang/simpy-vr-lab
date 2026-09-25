@@ -1,0 +1,70 @@
+renderer.xr.setReferenceSpaceType('local-floor');
+
+const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.05, 180);
+camera.position.set(26, 22, 32);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.target.set(0, 1.3, 0);
+controls.minDistance = 6;
+controls.maxDistance = 70;
+controls.maxPolarAngle = Math.PI * 0.49;
+controls.screenSpacePanning = false;
+
+scene.add(new THREE.HemisphereLight(0xc5e7ff, 0x172331, 2.4));
+const sun = new THREE.DirectionalLight(0xffffff, 3.2);
+sun.position.set(-12, 24, 14); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -35; sun.shadow.camera.right = 35; sun.shadow.camera.top = 25; sun.shadow.camera.bottom = -25;
+scene.add(sun);
+const warm = new THREE.PointLight(0xffc77b, 30, 30, 2); warm.position.set(10, 5, -5); scene.add(warm);
+const cool = new THREE.PointLight(0x54d6ff, 32, 35, 2); cool.position.set(-12, 5, 6); scene.add(cool);
+
+const facility = new THREE.Group();
+const dynamicResources = new THREE.Group();
+const patientsGroup = new THREE.Group();
+scene.add(facility, dynamicResources, patientsGroup);
+
+const materials = {
+  floor: new THREE.MeshStandardMaterial({ color: 0x13202c, roughness: .82, metalness: .08 }),
+  wall: new THREE.MeshStandardMaterial({ color: 0xdce7ea, roughness: .77, metalness: .03 }),
+  glass: new THREE.MeshPhysicalMaterial({ color: 0xaadff0, transparent: true, opacity: .16, roughness: .08, transmission: .25, side: THREE.DoubleSide }),
+  trim: new THREE.MeshStandardMaterial({ color: 0x263b4a, roughness: .35, metalness: .55 }),
+  desk: new THREE.MeshStandardMaterial({ color: 0x3c5666, roughness: .48, metalness: .20 }),
+  bed: new THREE.MeshStandardMaterial({ color: 0xdde7e9, roughness: .65 }),
+  rail: new THREE.MeshStandardMaterial({ color: 0x8ca1ad, roughness: .22, metalness: .72 }),
+  dark: new THREE.MeshStandardMaterial({ color: 0x0c1824, roughness: .42, metalness: .40 }),
+};
+
+function meshBox(w,h,d,material,x,y,z,parent=facility) {
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), material);
+  m.position.set(x,y,z); m.castShadow = true; m.receiveShadow = true; parent.add(m); return m;
+}
+function floorZone(name, x, z, w, d, color) {
+  const mat = new THREE.MeshStandardMaterial({ color, roughness: .72, metalness: .04, emissive: color, emissiveIntensity: .035 });
+  const m = meshBox(w,.035,d,mat,x,.025,z);
+  m.userData.zone = name; return m;
+}
+function makeTextSprite(text, opts={}) {
+  const c = document.createElement('canvas'); c.width = opts.width || 1024; c.height = opts.height || 220;
+  const g = c.getContext('2d');
+  g.fillStyle = opts.background || 'rgba(5,15,26,.88)';
+  if (g.roundRect) { g.beginPath(); g.roundRect(8,8,c.width-16,c.height-16,28); g.fill(); }
+  else g.fillRect(8,8,c.width-16,c.height-16);
+  g.strokeStyle = opts.stroke || 'rgba(86,215,255,.40)'; g.lineWidth = 5; g.strokeRect(10,10,c.width-20,c.height-20);
+  g.fillStyle = opts.color || '#eff7fb'; g.font = `800 ${opts.fontSize || 62}px system-ui`; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText(text, c.width/2, c.height/2);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false}));
+  s.scale.set(opts.scaleX || 6.5, opts.scaleY || 1.4, 1); return s;
+}
+function addSign(text,x,y,z,scale=5.6) { const s=makeTextSprite(text,{scaleX:scale,scaleY:1.05,fontSize:56}); s.position.set(x,y,z); facility.add(s); return s; }
+function addChair(x,z,rot=0) {
+  const g=new THREE.Group();
+  const seat=new THREE.Mesh(new THREE.BoxGeometry(.75,.12,.75),materials.dark);seat.position.y=.52;g.add(seat);
+  const back=new THREE.Mesh(new THREE.BoxGeometry(.75,.85,.10),materials.dark);back.position.set(0,.92,.33);g.add(back);
+  const legGeo=new THREE.CylinderGeometry(.035,.035,.5,8); for(const dx of [-.28,.28])for(const dz of [-.28,.28]){const l=new THREE.Mesh(legGeo,materials.rail);l.position.set(dx,.25,dz);g.add(l)}
+  g.position.set(x,0,z);g.rotation.y=rot;facility.add(g);
+}
+function addBed(x,z,rot=0) {
+  const g=new THREE.Group(); const frame=new THREE.Mesh(new THREE.BoxGeometry(2.2,.18,.95),materials.rail);frame.position.y=.55;g.add(frame);
+  const mattress=new THREE.Mesh(new THREE.BoxGeometry(2.0,.25,.85),materials.bed);mattress.position.y=.72;g.add(mattress);
+  const head=new THREE.Mesh(new THREE.BoxGeometry(.14,.85,.92),materials.rail);head.position.set(-1.06,1,.0);g.add(head);
