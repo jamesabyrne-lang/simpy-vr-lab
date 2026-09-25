@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: validate-healthcare-${{ github.ref }}
+  group: validate-healthcare-${{ github.sha }}
   cancel-in-progress: true
 
 jobs:
