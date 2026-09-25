@@ -280,10 +280,12 @@ def _max_queues(patients, horizon):
                     continue
                 q = stage["queue_enter"]
                 ss = stage["service_start"]
-                if q is None or ss is None or ss <= q + 1e-9:
+                if q is None or q > horizon:
+                    continue
+                if ss is not None and ss <= q + 1e-9:
                     continue
                 points.append((q, 1))
-                points.append((min(ss, horizon), -1))
+                points.append((min(ss if ss is not None else horizon, horizon), -1))
         points.sort(key=lambda x: (x[0], x[1]))
         count = peak = 0
         for _, delta in points:
