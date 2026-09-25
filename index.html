@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#07111f" />
+  <title>SimPy VR Lab — Security Checkpoint</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.29.5/full/pyodide.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <main id="appShell">
+    <section id="viewport" aria-label="3D simulation visualisation">
+      <canvas id="sceneCanvas"></canvas>
+
+      <div class="topbar glass">
+        <div>
+          <div class="eyebrow">SIMPY + WEBXR</div>
+          <h1>Security Checkpoint VR Lab</h1>
+          <p id="statusText">Loading Python runtime…</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="ghost-btn" data-view="overview" type="button">Overview</button>
+          <button class="ghost-btn" data-view="queue" type="button">Queue</button>
+          <button class="ghost-btn" data-view="desks" type="button">Desks</button>
+          <div id="vrSlot" aria-label="VR controls"></div>
+        </div>
+      </div>
+
+      <aside class="control-panel glass" aria-label="Simulation controls">
+        <div class="panel-heading">
+          <div>
+            <div class="eyebrow">EXPERIMENT</div>
+            <h2>Model controls</h2>
+          </div>
+          <span id="engineBadge" class="badge">Python loading</span>
+        </div>
+
+        <label>
+          <span>Arrival rate <strong id="arrivalReadout">0.55/min</strong></span>
+          <input id="arrivalRate" type="range" min="0.15" max="1.30" step="0.05" value="0.55" />
+        </label>
+
+        <label>
+          <span>Mean service <strong id="serviceReadout">4.2 min</strong></span>
+          <input id="meanService" type="range" min="1.5" max="8" step="0.1" value="4.2" />
+        </label>
+
+        <label>
+          <span>Service variability <strong id="variabilityReadout">CV 0.65</strong></span>
+          <input id="variability" type="range" min="0.20" max="1.50" step="0.05" value="0.65" />
+        </label>
+
+        <div class="split-row">
+          <label class="compact-field">
+            <span>Servers</span>
+            <select id="servers">
+              <option>1</option>
+              <option>2</option>
+              <option selected>3</option>
+              <option>4</option>
+              <option>5</option>
+            </select>
+          </label>
+          <label class="compact-field">
+            <span>Seed</span>
+            <input id="seed" type="number" min="1" max="99999" value="17" />
+          </label>
+        </div>
+
+        <button id="runButton" class="primary-btn" type="button" disabled>Run SimPy experiment</button>
+
+        <div class="playback-row">
+          <button id="playPause" class="icon-btn" type="button" aria-label="Pause animation">Ⅱ</button>
+          <button id="restartButton" class="icon-btn" type="button" aria-label="Restart animation">↺</button>
+          <label class="speed-control">
+            <span>Playback</span>
+            <select id="speed">
+              <option value="1">1×</option>
+              <option value="2">2×</option>
+              <option value="4" selected>4×</option>
+              <option value="8">8×</option>
+              <option value="16">16×</option>
+            </select>
+          </label>
+        </div>
+      </aside>
+
+      <section class="kpi-strip glass" aria-label="Simulation KPIs">
+        <article><span>Clock</span><strong id="kpiClock">0:00</strong></article>
+        <article><span>Queue now</span><strong id="kpiQueue">0</strong></article>
+        <article><span>Mean wait</span><strong id="kpiWait">—</strong></article>
+        <article><span>Utilisation</span><strong id="kpiUtil">—</strong></article>
+        <article><span>Throughput</span><strong id="kpiThroughput">—</strong></article>
+      </section>
+
+      <div id="hint" class="hint glass">Drag to orbit · wheel to zoom · use the view buttons to move inside the system</div>
+    </section>
+
+    <noscript>This demonstration requires JavaScript.</noscript>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
