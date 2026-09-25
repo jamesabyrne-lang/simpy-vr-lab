@@ -28,3 +28,6 @@
 .playback{grid-template-columns:38px 38px 88px 1fr auto}
 [hidden]{display:none!important}
 @media(max-width:700px){.resource-cards{grid-template-columns:1fr}.timeline-readout{display:none}.playback{grid-template-columns:36px 36px 72px 1fr}}
+
+.resource-panel{position:absolute;z-index:16;right:14px;top:330px;width:300px;border-radius:16px;padding:11px}
+@media(max-width:1000px){.resource-panel{display:none}}
